@@ -230,17 +230,17 @@
             <!-- Complicated Case Section -->
             <div class="section conditional" id="complicated-section"><div class="section-title">⚠️ Complicated Case</div><div class="form-group"><label class="required">Complicated Outside or Inside</label><div class="check-group" data-group="complicated_location"><label><input type="checkbox" name="complicated_location" value="Outside hospital"> Outside hospital</label><label><input type="checkbox" name="complicated_location" value="Inside hospital"> Inside hospital</label><label><input type="checkbox" name="complicated_location" value="Illegal pregnancy"> Illegal pregnancy</label></div><div class="error-msg">Select at least one</div></div><div class="form-group"><label class="required">Presentation of Complication</label><textarea name="complicated_presentation" rows="2" required></textarea></div><div class="form-group"><label class="required">Intervention Done</label><textarea name="complicated_intervention_done" rows="2" required></textarea></div><div class="form-group"><label class="required">Intervention to be Done</label><textarea name="complicated_intervention_todo" rows="2" required></textarea></div><div class="form-group"><label class="required">Treatment After Interventions</label><textarea name="complicated_treatment" rows="2" required placeholder="Including referral to ICU"></textarea></div><div class="form-group"><label class="required">Medical Report (Arabic)</label><textarea name="complicated_medical_report" rows="2" required placeholder="Surgical/gynecology report number and date"></textarea></div></div>
 
-            <!-- SECTION 12: SURGEONS (with autocomplete) -->
+            <!-- SECTION 12: SURGEONS (forced dropdown lists) -->
             <div class="section">
                 <div class="section-title">👨‍⚕️ SURGEONS</div>
-                <div class="form-group"><label class="required">CONSULTANT</label><input type="text" name="consultant" list="doctors-list" required></div>
-                <div class="form-group"><label class="required">SPECIALIST</label><input type="text" name="specialist" list="doctors-list" required></div>
-                <div class="form-group"><label>SPECIALIST (2) <span class="hint">optional</span></label><input type="text" name="specialist" list="doctors-list"></div>
-                <div class="form-group"><label class="required">RESIDENTS</label><input type="text" name="residents" list="doctors-list" required></div>
-                <div class="form-group"><label>RESIDENTS (2) <span class="hint">optional</span></label><input type="text" name="residents" list="doctors-list"></div>
+                <div class="form-group"><label class="required">CONSULTANT</label><select name="consultant" class="doctors-select" required><option value="">-- Select --</option></select></div>
+                <div class="form-group"><label class="required">SPECIALIST</label><select name="specialist" class="doctors-select" required><option value="">-- Select --</option></select></div>
+                <div class="form-group"><label>SPECIALIST (2) <span class="hint">optional</span></label><select name="specialist" class="doctors-select"><option value="">-- None --</option></select></div>
+                <div class="form-group"><label class="required">RESIDENTS</label><select name="residents" class="doctors-select" required><option value="">-- Select --</option></select></div>
+                <div class="form-group"><label>RESIDENTS (2) <span class="hint">optional</span></label><select name="residents" class="doctors-select"><option value="">-- None --</option></select></div>
                 <div class="form-group"><label class="required">SCRUB NURSE <span class="hint">ممرضة العمليات-الكشك او القسم المسئوله</span></label><input type="text" name="scrub_nurse" required></div>
                 <div class="form-group"><label class="required">Type of treatment</label><select name="treatment_type" required><option value="">-- Select --</option><option value="طوارئ">طوارئ</option><option value="مجانى(تكافل وكرامة-بحث اجتماعى-----الخ)">مجانى(تكافل وكرامة-بحث اجتماعى-----الخ)</option><option value="علاج بأجر">علاج بأجر</option><option value="تأمين صحى">تأمين صحى</option><option value="نفقة">نفقة</option></select></div>
-                <div class="form-group"><label class="required">Data entered by</label><input type="text" name="entered_by" list="doctors-list" required></div>
+                <div class="form-group"><label class="required">Data entered by</label><select name="entered_by" class="doctors-select" required><option value="">-- Select --</option></select></div>
             </div>
 
             <button type="submit">Submit Report</button>
@@ -250,13 +250,9 @@
     <div class="thank-you" id="thank-you"><h2>✅ Data Submitted Successfully</h2><p>The patient data has been recorded.</p><button type="button" onclick="location.reload()">Submit Another Report</button></div>
 </div>
 
-<!-- Datalist for doctor autocomplete -->
-<datalist id="doctors-list"></datalist>
-
 <script>
     (function() {
-        // --- LOAD DOCTORS NAMES FROM PUBLISHED SHEET ---
-        // Derived CSV link from the published HTML URL
+        // --- LOAD DOCTORS NAMES FROM COLUMN A ONLY (exclude header) ---
         const DOCTORS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRDOEhW9VetivLm_3iGJgLJ9i86v0tcQcFpHw7TQBjZkWqr0TPM1npBklwEaHac_3LMZePMvOgNzCLF/pub?output=csv";
 
         async function loadDoctorsList() {
@@ -264,15 +260,31 @@
                 const resp = await fetch(DOCTORS_CSV_URL);
                 const text = await resp.text();
                 const rows = text.split('\n');
-                const datalist = document.getElementById('doctors-list');
-                datalist.innerHTML = '';
-                rows.forEach(row => {
-                    const name = row.trim();
-                    if (name) {
+                // Skip first row (header) and take only the first column
+                const names = [];
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i].trim();
+                    if (row === '') continue;
+                    // First column (split by comma, but column A might contain commas? Usually not)
+                    // If the name contains commas, we need to handle quoting? For simplicity, assume first CSV field.
+                    const firstCol = row.split(',')[0].trim();
+                    if (firstCol) names.push(firstCol);
+                }
+                // Remove duplicates while preserving order
+                const uniqueNames = [...new Set(names)];
+                // Populate all dropdowns with class "doctors-select"
+                const selects = document.querySelectorAll('.doctors-select');
+                selects.forEach(select => {
+                    // Preserve the first placeholder option
+                    const placeholder = select.querySelector('option[value=""]');
+                    select.innerHTML = '';
+                    if (placeholder) select.appendChild(placeholder);
+                    uniqueNames.forEach(name => {
                         const opt = document.createElement('option');
                         opt.value = name;
-                        datalist.appendChild(opt);
-                    }
+                        opt.textContent = name;
+                        select.appendChild(opt);
+                    });
                 });
             } catch (err) {
                 console.warn('Could not load doctors list:', err);
@@ -280,7 +292,7 @@
         }
         loadDoctorsList();
 
-        // --- Set default dates and day ---
+        // --- Set default dates and day (unchanged) ---
         (function() {
             const today = new Date();
             const dateStr = today.toISOString().split('T')[0];
@@ -376,17 +388,18 @@
             });
         }
 
-        // --- COLUMN–TO–FIELD MAPPING ---
+        // --- COLUMN–TO–FIELD MAPPING (unchanged) ---
         const COLUMN_MAP = [
             { col: "B",  field: "patient_name" },{ col: "C",  field: "age" },{ col: "D",  field: "address" },{ col: "E",  field: "admission_date" },{ col: "F",  field: "ticket_id" },{ col: "G",  field: "shift_day" },{ col: "H",  field: "comorbidities" },{ col: "I",  field: "past_medical" },{ col: "J",  field: "prev_surgery" },{ col: "K",  field: "surgery_type" },{ col: "L",  field: "parity_type" },{ col: "M",  field: "exact_parity" },{ col: "N",  field: "living_children" },{ col: "O",  field: "living_males" },{ col: "P",  field: "last_delivery_time" },{ col: "Q",  field: "last_abortion_time" },{ col: "R",  field: "prev_cs" },{ col: "S",  field: "cs_number" },{ col: "T",  field: "sbp" },{ col: "U",  field: "dbp" },{ col: "V",  field: "pulse" },{ col: "W",  field: "temperature" },{ col: "X",  field: "resp_rate" },{ col: "Y",  field: "consciousness" },{ col: "Z",  field: "o2_sat" },{ col: "AA", field: "urine_output" },{ col: "AB", field: "meow_score" },{ col: "AC", field: "lab_tests" },{ col: "AD", field: "positive_lab_data" },{ col: "AE", field: "imaging" },{ col: "AF", field: "positive_imaging_data" },{ col: "AG", field: "blood_transfusion" },{ col: "AH", field: "blood_group" },{ col: "AI", field: "transfused" },{ col: "AJ", field: "case_type" },{ col: "AK", field: "preg_conditions" },{ col: "AL", field: "preg_condition_other" },{ col: "AM", field: "gestational_age" },{ col: "AN", field: "exact_gestational_age" },{ col: "AO", field: "admission_reason" },{ col: "AP", field: "labour_onset" },{ col: "AQ", field: "pregnancy_type" },{ col: "AR", field: "fetal_presentation" },{ col: "AS", field: "delivery_date" },{ col: "AT", field: "delivery_mode" },{ col: "AU", field: "cs_indications" },{ col: "AV", field: "fetus_gender" },{ col: "AW", field: "fetal_complications" },{ col: "AX", field: "maternal_complications" },{ col: "AY", field: "delivery_report" },{ col: "AZ", field: "robson" },{ col: "BA", field: "contraceptive" },{ col: "BB", field: "contraceptive_refusal_reason" },{ col: "BC", field: "abortion_type" },{ col: "BD", field: "abortion_intervention" },{ col: "BE", field: "abortion_intervention_details" },{ col: "BF", field: "abortion_treatment" },{ col: "BG", field: "abortion_contraceptive" },{ col: "BH", field: "vesicular_ga_lmp" },{ col: "BI", field: "vesicular_type" },{ col: "BJ", field: "vesicular_intervention" },{ col: "BK", field: "vesicular_medications" },{ col: "BL", field: "vesicular_contraceptive" },{ col: "BM", field: "ectopic_type" },{ col: "BN", field: "ectopic_disturbed" },{ col: "BO", field: "ectopic_intervention" },{ col: "BP", field: "ectopic_intervention_brief" },{ col: "BQ", field: "ectopic_contraceptive" },{ col: "BR", field: "followup_indication" },{ col: "BS", field: "followup_treatment" },{ col: "BT", field: "gyn_diagnosis" },{ col: "BU", field: "gyn_intervention" },{ col: "BV", field: "gyn_op_date" },{ col: "BW", field: "gyn_complications" },{ col: "BX", field: "gyn_report" },{ col: "BY", field: "gyn_treatment" },{ col: "BZ", field: "complicated_location" },{ col: "CA", field: "complicated_presentation" },{ col: "CB", field: "complicated_intervention_done" },{ col: "CC", field: "complicated_intervention_todo" },{ col: "CD", field: "complicated_treatment" },{ col: "CE", field: "complicated_medical_report" },{ col: "CF", field: "consultant" },{ col: "CG", field: "specialist" },{ col: "CH", field: "residents" },{ col: "CI", field: "scrub_nurse" },{ col: "CJ", field: "treatment_type" },{ col: "CK", field: "entered_by" }
         ];
 
+        // --- Build FormData (handles multiple selects with same name) ---
         function buildFormData() {
             const form = document.getElementById('patient-form');
             const fd = new FormData();
             const checkboxGroups = new Set(["comorbidities","lab_tests","imaging","transfused","fetal_complications","maternal_complications","ectopic_intervention","complicated_location","preg_conditions","cs_indications"]);
             const radioFields = new Set(["prev_surgery","parity_type","prev_cs","delivery_mode"]);
-            const multiInputFields = new Set(["specialist","residents"]);
+            const multiInputFields = new Set(["specialist","residents"]); // now selects, same behavior
 
             COLUMN_MAP.forEach(item => {
                 const name = item.field;
@@ -398,9 +411,10 @@
                     const checkedRadio = form.querySelector(`input[name="${name}"]:checked`);
                     value = checkedRadio ? checkedRadio.value : "";
                 } else if (multiInputFields.has(name)) {
-                    const inputs = form.querySelectorAll(`input[name="${name}"]`);
+                    // Collect values from all selects with this name (including optional "None" which has value "")
+                    const selects = form.querySelectorAll(`select[name="${name}"]`);
                     const nonEmpty = [];
-                    inputs.forEach(inp => { if (inp.value.trim() !== '') nonEmpty.push(inp.value.trim()); });
+                    selects.forEach(sel => { const val = sel.value; if (val !== '') nonEmpty.push(val); });
                     value = nonEmpty.join('\n');
                 } else {
                     const el = form.querySelector(`[name="${name}"]`);
