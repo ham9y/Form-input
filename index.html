@@ -277,10 +277,9 @@
 
 <script>
     (function() {
-        // Global array for valid doctor names (column A only)
+        // --- Doctor names (column A only, proper CSV parse) ---
         let doctorNames = [];
 
-        // --- Robust CSV parser that handles quoted fields and newlines ---
         function parseCSV(text) {
             const rows = [];
             let currentRow = [];
@@ -291,62 +290,34 @@
                 const nextChar = text[i + 1];
                 if (inQuotes) {
                     if (char === '"') {
-                        if (nextChar === '"') {
-                            currentField += '"';
-                            i++;
-                        } else {
-                            inQuotes = false;
-                        }
-                    } else {
-                        currentField += char;
-                    }
+                        if (nextChar === '"') { currentField += '"'; i++; }
+                        else inQuotes = false;
+                    } else currentField += char;
                 } else {
-                    if (char === '"') {
-                        inQuotes = true;
-                    } else if (char === ',') {
-                        currentRow.push(currentField);
-                        currentField = '';
-                    } else if (char === '\n') {
-                        currentRow.push(currentField);
-                        rows.push(currentRow);
-                        currentRow = [];
-                        currentField = '';
-                    } else if (char === '\r') {
-                        if (nextChar === '\n') {
-                            i++;
-                            currentRow.push(currentField);
-                            rows.push(currentRow);
-                            currentRow = [];
-                            currentField = '';
-                        }
-                    } else {
-                        currentField += char;
-                    }
+                    if (char === '"') inQuotes = true;
+                    else if (char === ',') { currentRow.push(currentField); currentField = ''; }
+                    else if (char === '\n') { currentRow.push(currentField); rows.push(currentRow); currentRow = []; currentField = ''; }
+                    else if (char === '\r') { if (nextChar === '\n') i++; currentRow.push(currentField); rows.push(currentRow); currentRow = []; currentField = ''; }
+                    else currentField += char;
                 }
             }
-            // Push last row if any
-            if (currentField !== '' || currentRow.length > 0) {
-                currentRow.push(currentField);
-                rows.push(currentRow);
-            }
+            if (currentField !== '' || currentRow.length > 0) { currentRow.push(currentField); rows.push(currentRow); }
             return rows;
         }
 
-        // --- Load column A (only) from doctors sheet, excluding header ---
         const DOCTORS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRDOEhW9VetivLm_3iGJgLJ9i86v0tcQcFpHw7TQBjZkWqr0TPM1npBklwEaHac_3LMZePMvOgNzCLF/pub?output=csv";
 
         async function loadDoctorsList() {
             try {
                 const resp = await fetch(DOCTORS_CSV_URL);
                 const text = await resp.text();
-                const rows = parseCSV(text);      // proper CSV parsing
+                const rows = parseCSV(text);
                 const names = [];
-                // Skip header row (index 0), start from index 1
                 for (let i = 1; i < rows.length; i++) {
                     const firstCol = (rows[i][0] || '').trim();
                     if (firstCol) names.push(firstCol);
                 }
-                doctorNames = [...new Set(names)]; // unique
+                doctorNames = [...new Set(names)];
                 const datalist = document.getElementById('doctors-list');
                 datalist.innerHTML = '';
                 doctorNames.forEach(name => {
@@ -360,7 +331,7 @@
         }
         loadDoctorsList();
 
-        // --- Set default dates and day ---
+        // --- Default dates & day ---
         (function() {
             const today = new Date();
             const dateStr = today.toISOString().split('T')[0];
@@ -371,21 +342,34 @@
             if (daySelect && !daySelect.value) daySelect.value = dayMap[today.getDay()];
         })();
 
-        // --- Conditional logic (unchanged) ---
+        // --- Conditional logic ---
         function setConditional(triggerSelector, conditionValue, targetBox, fieldSelector = null) {
             const trigger = document.querySelector(triggerSelector);
             if (!trigger) return;
             const update = () => {
                 let show = false;
-                if (trigger.tagName === 'SELECT') { show = (trigger.value === conditionValue); }
+                if (trigger.tagName === 'SELECT') show = (trigger.value === conditionValue);
                 else { const checked = document.querySelector(triggerSelector + ':checked'); show = (checked && checked.value === conditionValue); }
-                if (show) { targetBox.classList.add('visible'); if (fieldSelector) targetBox.querySelectorAll(fieldSelector).forEach(f => f.setAttribute('required', '')); }
-                else { targetBox.classList.remove('visible'); if (fieldSelector) { targetBox.querySelectorAll(fieldSelector).forEach(f => { f.removeAttribute('required'); if (f.type !== 'radio' && f.type !== 'checkbox') f.value = ''; }); } targetBox.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none'); targetBox.querySelectorAll('input, select, textarea').forEach(e => e.style.borderColor = '#cfdde9'); }
+                if (show) {
+                    targetBox.classList.add('visible');
+                    if (fieldSelector) targetBox.querySelectorAll(fieldSelector).forEach(f => f.setAttribute('required', ''));
+                } else {
+                    targetBox.classList.remove('visible');
+                    if (fieldSelector) {
+                        targetBox.querySelectorAll(fieldSelector).forEach(f => {
+                            f.removeAttribute('required');
+                            if (f.type !== 'radio' && f.type !== 'checkbox') f.value = '';
+                        });
+                    }
+                    targetBox.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none');
+                    targetBox.querySelectorAll('input, select, textarea').forEach(e => e.style.borderColor = '#cfdde9');
+                }
             };
             if (trigger.tagName === 'SELECT') trigger.addEventListener('change', update);
             else document.querySelectorAll(triggerSelector).forEach(r => r.addEventListener('change', update));
             update();
         }
+
         setConditional('input[name="prev_surgery"]', 'YES', document.getElementById('surgery-type-box'), 'input');
         setConditional('input[name="parity_type"]', 'Multipara', document.getElementById('multipara-section'), 'input, select, textarea');
         setConditional('input[name="prev_cs"]', 'Yes', document.getElementById('cs-number-box'), 'input');
@@ -395,11 +379,24 @@
         const deliveryModeSelect = document.getElementById('delivery_mode');
         const csIndicationsBox = document.getElementById('cs-indications-box');
         if (deliveryModeSelect && csIndicationsBox) {
-            const toggleCSIndications = () => { if (deliveryModeSelect.value === 'C/S') { csIndicationsBox.classList.add('visible'); csIndicationsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.setAttribute('required', '')); } else { csIndicationsBox.classList.remove('visible'); csIndicationsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.removeAttribute('required'); cb.checked = false; }); csIndicationsBox.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none'); } };
+            const toggleCSIndications = () => {
+                if (deliveryModeSelect.value === 'C/S') {
+                    csIndicationsBox.classList.add('visible');
+                    csIndicationsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.setAttribute('required', ''));
+                } else {
+                    csIndicationsBox.classList.remove('visible');
+                    csIndicationsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                        cb.removeAttribute('required');
+                        cb.checked = false;
+                    });
+                    csIndicationsBox.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none');
+                }
+            };
             deliveryModeSelect.addEventListener('change', toggleCSIndications);
             toggleCSIndications();
         }
 
+        // Management & obstetric sections
         const caseTypeSelect = document.getElementById('case_type');
         const obstetricSection = document.getElementById('obstetric-section');
         const gynecologicalSection = document.getElementById('gynecological-section');
@@ -413,59 +410,129 @@
 
         function toggleCaseSections() {
             const caseVal = caseTypeSelect.value;
-            if (caseVal === 'Obstetric case') { obstetricSection.classList.add('visible'); obstetricSection.querySelectorAll('input, select, textarea').forEach(el => { if (!el.closest('#delivery-section') && !el.closest('#abortion-section') && !el.closest('#vesicular-section') && !el.closest('#ectopic-section') && !el.closest('#followup-section')) el.setAttribute('required', ''); }); toggleAdmissionReasonSections(); }
-            else { obstetricSection.classList.remove('visible'); clearAllSubSections(obstetricSection); }
-            if (caseVal === 'Gynecological case') { gynecologicalSection.classList.add('visible'); gynecologicalSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', '')); }
-            else { gynecologicalSection.classList.remove('visible'); gynecologicalSection.querySelectorAll('input, select, textarea').forEach(el => { el.removeAttribute('required'); if (el.type !== 'radio' && el.type !== 'checkbox') el.value = ''; }); }
-            if (caseVal === 'Complicated case(outside or inside)') { complicatedSection.classList.add('visible'); complicatedSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', '')); }
-            else { complicatedSection.classList.remove('visible'); complicatedSection.querySelectorAll('input, select, textarea').forEach(el => { el.removeAttribute('required'); if (el.type !== 'radio' && el.type !== 'checkbox') el.value = ''; }); }
+            if (caseVal === 'Obstetric case') {
+                obstetricSection.classList.add('visible');
+                obstetricSection.querySelectorAll('input, select, textarea').forEach(el => {
+                    if (!el.closest('#delivery-section') && !el.closest('#abortion-section') && !el.closest('#vesicular-section') && !el.closest('#ectopic-section') && !el.closest('#followup-section')) {
+                        el.setAttribute('required', '');
+                    }
+                });
+                toggleAdmissionReasonSections();
+            } else {
+                obstetricSection.classList.remove('visible');
+                clearAllSubSections(obstetricSection);
+            }
+            if (caseVal === 'Gynecological case') {
+                gynecologicalSection.classList.add('visible');
+                gynecologicalSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', ''));
+            } else {
+                gynecologicalSection.classList.remove('visible');
+                gynecologicalSection.querySelectorAll('input, select, textarea').forEach(el => {
+                    el.removeAttribute('required');
+                    if (el.type !== 'radio' && el.type !== 'checkbox') el.value = '';
+                });
+            }
+            if (caseVal === 'Complicated case(outside or inside)') {
+                complicatedSection.classList.add('visible');
+                complicatedSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', ''));
+            } else {
+                complicatedSection.classList.remove('visible');
+                complicatedSection.querySelectorAll('input, select, textarea').forEach(el => {
+                    el.removeAttribute('required');
+                    if (el.type !== 'radio' && el.type !== 'checkbox') el.value = '';
+                });
+            }
         }
-        function clearAllSubSections(section) { [deliverySection, abortionSection, vesicularSection, ectopicSection, followupSection].forEach(sec => { sec.classList.remove('visible'); sec.querySelectorAll('input, select, textarea').forEach(el => { el.removeAttribute('required'); if (el.type !== 'radio' && el.type !== 'checkbox') el.value = ''; }); }); }
-        function toggleAdmissionReasonSections() { const reason = admissionReasonSelect.value; clearAllSubSections(obstetricSection); if (reason === 'For delivery') { deliverySection.classList.add('visible'); deliverySection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', '')); const dm = document.getElementById('delivery_mode'); if (dm) dm.dispatchEvent(new Event('change')); } else if (reason === 'Abortion') { abortionSection.classList.add('visible'); abortionSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', '')); } else if (reason === 'Vesicular mole') { vesicularSection.classList.add('visible'); vesicularSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', '')); } else if (reason === 'Ectopic pregnancy') { ectopicSection.classList.add('visible'); ectopicSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', '')); } else if (reason === 'For follow up') { followupSection.classList.add('visible'); followupSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', '')); } }
+        function clearAllSubSections(section) {
+            [deliverySection, abortionSection, vesicularSection, ectopicSection, followupSection].forEach(sec => {
+                sec.classList.remove('visible');
+                sec.querySelectorAll('input, select, textarea').forEach(el => {
+                    el.removeAttribute('required');
+                    if (el.type !== 'radio' && el.type !== 'checkbox') el.value = '';
+                });
+            });
+        }
+        function toggleAdmissionReasonSections() {
+            const reason = admissionReasonSelect.value;
+            clearAllSubSections(obstetricSection);
+            if (reason === 'For delivery') {
+                deliverySection.classList.add('visible');
+                deliverySection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', ''));
+                const dm = document.getElementById('delivery_mode');
+                if (dm) dm.dispatchEvent(new Event('change'));
+            } else if (reason === 'Abortion') {
+                abortionSection.classList.add('visible');
+                abortionSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', ''));
+            } else if (reason === 'Vesicular mole') {
+                vesicularSection.classList.add('visible');
+                vesicularSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', ''));
+            } else if (reason === 'Ectopic pregnancy') {
+                ectopicSection.classList.add('visible');
+                ectopicSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', ''));
+            } else if (reason === 'For follow up') {
+                followupSection.classList.add('visible');
+                followupSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', ''));
+            }
+        }
         caseTypeSelect.addEventListener('change', toggleCaseSections);
         admissionReasonSelect.addEventListener('change', toggleAdmissionReasonSections);
         toggleCaseSections();
 
-        // --- "NO" / "None" exclusive checkbox logic ---
-        const pregConditionsGroup = document.querySelector('[data-group="preg_conditions"]');
-        if (pregConditionsGroup) {
-            pregConditionsGroup.addEventListener('change', (e) => {
+        // --- Exclusive "None" logic for checkbox groups ---
+        function addNoneExclusive(groupSelector, noneValue) {
+            const group = document.querySelector(groupSelector);
+            if (!group) return;
+            group.addEventListener('change', (e) => {
                 const clicked = e.target;
-                if (clicked.name === 'preg_conditions' && clicked.value === 'NO') {
-                    if (clicked.checked) pregConditionsGroup.querySelectorAll('input[name="preg_conditions"]').forEach(cb => { if (cb !== clicked) cb.checked = false; });
-                } else if (clicked.name === 'preg_conditions' && clicked.value !== 'NO') {
-                    if (clicked.checked) { const noCb = pregConditionsGroup.querySelector('input[value="NO"]'); if (noCb) noCb.checked = false; }
-                }
-                const otherCb = pregConditionsGroup.querySelector('input[value="other"]');
-                const otherBox = document.getElementById('preg-other-box');
-                if (otherCb && otherBox) {
-                    if (otherCb.checked) { otherBox.classList.add('visible'); otherBox.querySelector('input').setAttribute('required', ''); }
-                    else { otherBox.classList.remove('visible'); otherBox.querySelector('input').removeAttribute('required'); otherBox.querySelector('input').value = ''; otherBox.querySelector('.error-msg').style.display = 'none'; }
-                }
-            });
-        }
-        const comorbiditiesGroup = document.querySelector('[data-group="comorbidities"]');
-        if (comorbiditiesGroup) {
-            comorbiditiesGroup.addEventListener('change', (e) => {
-                const clicked = e.target;
-                if (clicked.name === 'comorbidities' && clicked.value === 'None') {
-                    if (clicked.checked) comorbiditiesGroup.querySelectorAll('input[name="comorbidities"]').forEach(cb => { if (cb !== clicked) cb.checked = false; });
-                } else if (clicked.name === 'comorbidities' && clicked.value !== 'None') {
-                    if (clicked.checked) { const noneCb = comorbiditiesGroup.querySelector('input[value="None"]'); if (noneCb) noneCb.checked = false; }
+                const checkboxes = group.querySelectorAll('input[type="checkbox"]');
+                if (clicked.value === noneValue) {
+                    if (clicked.checked) {
+                        checkboxes.forEach(cb => { if (cb !== clicked) cb.checked = false; });
+                    }
+                } else {
+                    if (clicked.checked) {
+                        const noneCb = group.querySelector(`input[value="${noneValue}"]`);
+                        if (noneCb) noneCb.checked = false;
+                    }
                 }
             });
         }
 
-        // --- COLUMN–TO–FIELD MAPPING ---
+        addNoneExclusive('[data-group="comorbidities"]', 'None');
+        addNoneExclusive('[data-group="preg_conditions"]', 'NO');
+        addNoneExclusive('[data-group="fetal_complications"]', 'None');
+        addNoneExclusive('[data-group="maternal_complications"]', 'None');
+
+        // --- Show/hide "other" for pregnancy conditions ---
+        const pregConditionsGroup = document.querySelector('[data-group="preg_conditions"]');
+        if (pregConditionsGroup) {
+            pregConditionsGroup.addEventListener('change', () => {
+                const otherCb = pregConditionsGroup.querySelector('input[value="other"]');
+                const otherBox = document.getElementById('preg-other-box');
+                if (otherCb && otherBox) {
+                    if (otherCb.checked) {
+                        otherBox.classList.add('visible');
+                        otherBox.querySelector('input').setAttribute('required', '');
+                    } else {
+                        otherBox.classList.remove('visible');
+                        otherBox.querySelector('input').removeAttribute('required');
+                        otherBox.querySelector('input').value = '';
+                        otherBox.querySelector('.error-msg').style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        // --- Column map & form data ---
         const COLUMN_MAP = [
-            { col: "B",  field: "patient_name" },{ col: "C",  field: "age" },{ col: "D",  field: "address" },{ col: "E",  field: "admission_date" },{ col: "F",  field: "ticket_id" },{ col: "G",  field: "shift_day" },{ col: "H",  field: "comorbidities" },{ col: "I",  field: "past_medical" },{ col: "J",  field: "prev_surgery" },{ col: "K",  field: "surgery_type" },{ col: "L",  field: "parity_type" },{ col: "M",  field: "exact_parity" },{ col: "N",  field: "living_children" },{ col: "O",  field: "living_males" },{ col: "P",  field: "last_delivery_time" },{ col: "Q",  field: "last_abortion_time" },{ col: "R",  field: "prev_cs" },{ col: "S",  field: "cs_number" },{ col: "T",  field: "sbp" },{ col: "U",  field: "dbp" },{ col: "V",  field: "pulse" },{ col: "W",  field: "temperature" },{ col: "X",  field: "resp_rate" },{ col: "Y",  field: "consciousness" },{ col: "Z",  field: "o2_sat" },{ col: "AA", field: "urine_output" },{ col: "AB", field: "meow_score" },{ col: "AC", field: "lab_tests" },{ col: "AD", field: "positive_lab_data" },{ col: "AE", field: "imaging" },{ col: "AF", field: "positive_imaging_data" },{ col: "AG", field: "blood_transfusion" },{ col: "AH", field: "blood_group" },{ col: "AI", field: "transfused" },{ col: "AJ", field: "case_type" },{ col: "AK", field: "preg_conditions" },{ col: "AL", field: "preg_condition_other" },{ col: "AM", field: "gestational_age" },{ col: "AN", field: "exact_gestational_age" },{ col: "AO", field: "admission_reason" },{ col: "AP", field: "labour_onset" },{ col: "AQ", field: "pregnancy_type" },{ col: "AR", field: "fetal_presentation" },{ col: "AS", field: "delivery_date" },{ col: "AT", field: "delivery_mode" },{ col: "AU", field: "cs_indications" },{ col: "AV", field: "fetus_gender" },{ col: "AW", field: "fetal_complications" },{ col: "AX", field: "maternal_complications" },{ col: "AY", field: "delivery_report" },{ col: "AZ", field: "robson" },{ col: "BA", field: "contraceptive" },{ col: "BB", field: "contraceptive_refusal_reason" },{ col: "BC", field: "abortion_type" },{ col: "BD", field: "abortion_intervention" },{ col: "BE", field: "abortion_intervention_details" },{ col: "BF", field: "abortion_treatment" },{ col: "BG", field: "abortion_contraceptive" },{ col: "BH", field: "vesicular_ga_lmp" },{ col: "BI", field: "vesicular_type" },{ col: "BJ", field: "vesicular_intervention" },{ col: "BK", field: "vesicular_medications" },{ col: "BL", field: "vesicular_contraceptive" },{ col: "BM", field: "ectopic_type" },{ col: "BN", field: "ectopic_disturbed" },{ col: "BO", field: "ectopic_intervention" },{ col: "BP", field: "ectopic_intervention_brief" },{ col: "BQ", field: "ectopic_contraceptive" },{ col: "BR", field: "followup_indication" },{ col: "BS", field: "followup_treatment" },{ col: "BT", field: "gyn_diagnosis" },{ col: "BU", field: "gyn_intervention" },{ col: "BV", field: "gyn_op_date" },{ col: "BW", field: "gyn_complications" },{ col: "BX", field: "gyn_report" },{ col: "BY", field: "gyn_treatment" },{ col: "BZ", field: "complicated_location" },{ col: "CA", field: "complicated_presentation" },{ col: "CB", field: "complicated_intervention_done" },{ col: "CC", field: "complicated_intervention_todo" },{ col: "CD", field: "complicated_treatment" },{ col: "CE", field: "complicated_medical_report" },{ col: "CF", field: "consultant" },{ col: "CG", field: "specialist" },{ col: "CH", field: "residents" },{ col: "CI", field: "scrub_nurse" },{ col: "CJ", field: "treatment_type" },{ col: "CK", field: "entered_by" }
+            { col: "B", field: "patient_name" },{ col: "C", field: "age" },{ col: "D", field: "address" },{ col: "E", field: "admission_date" },{ col: "F", field: "ticket_id" },{ col: "G", field: "shift_day" },{ col: "H", field: "comorbidities" },{ col: "I", field: "past_medical" },{ col: "J", field: "prev_surgery" },{ col: "K", field: "surgery_type" },{ col: "L", field: "parity_type" },{ col: "M", field: "exact_parity" },{ col: "N", field: "living_children" },{ col: "O", field: "living_males" },{ col: "P", field: "last_delivery_time" },{ col: "Q", field: "last_abortion_time" },{ col: "R", field: "prev_cs" },{ col: "S", field: "cs_number" },{ col: "T", field: "sbp" },{ col: "U", field: "dbp" },{ col: "V", field: "pulse" },{ col: "W", field: "temperature" },{ col: "X", field: "resp_rate" },{ col: "Y", field: "consciousness" },{ col: "Z", field: "o2_sat" },{ col: "AA", field: "urine_output" },{ col: "AB", field: "meow_score" },{ col: "AC", field: "lab_tests" },{ col: "AD", field: "positive_lab_data" },{ col: "AE", field: "imaging" },{ col: "AF", field: "positive_imaging_data" },{ col: "AG", field: "blood_transfusion" },{ col: "AH", field: "blood_group" },{ col: "AI", field: "transfused" },{ col: "AJ", field: "case_type" },{ col: "AK", field: "preg_conditions" },{ col: "AL", field: "preg_condition_other" },{ col: "AM", field: "gestational_age" },{ col: "AN", field: "exact_gestational_age" },{ col: "AO", field: "admission_reason" },{ col: "AP", field: "labour_onset" },{ col: "AQ", field: "pregnancy_type" },{ col: "AR", field: "fetal_presentation" },{ col: "AS", field: "delivery_date" },{ col: "AT", field: "delivery_mode" },{ col: "AU", field: "cs_indications" },{ col: "AV", field: "fetus_gender" },{ col: "AW", field: "fetal_complications" },{ col: "AX", field: "maternal_complications" },{ col: "AY", field: "delivery_report" },{ col: "AZ", field: "robson" },{ col: "BA", field: "contraceptive" },{ col: "BB", field: "contraceptive_refusal_reason" },{ col: "BC", field: "abortion_type" },{ col: "BD", field: "abortion_intervention" },{ col: "BE", field: "abortion_intervention_details" },{ col: "BF", field: "abortion_treatment" },{ col: "BG", field: "abortion_contraceptive" },{ col: "BH", field: "vesicular_ga_lmp" },{ col: "BI", field: "vesicular_type" },{ col: "BJ", field: "vesicular_intervention" },{ col: "BK", field: "vesicular_medications" },{ col: "BL", field: "vesicular_contraceptive" },{ col: "BM", field: "ectopic_type" },{ col: "BN", field: "ectopic_disturbed" },{ col: "BO", field: "ectopic_intervention" },{ col: "BP", field: "ectopic_intervention_brief" },{ col: "BQ", field: "ectopic_contraceptive" },{ col: "BR", field: "followup_indication" },{ col: "BS", field: "followup_treatment" },{ col: "BT", field: "gyn_diagnosis" },{ col: "BU", field: "gyn_intervention" },{ col: "BV", field: "gyn_op_date" },{ col: "BW", field: "gyn_complications" },{ col: "BX", field: "gyn_report" },{ col: "BY", field: "gyn_treatment" },{ col: "BZ", field: "complicated_location" },{ col: "CA", field: "complicated_presentation" },{ col: "CB", field: "complicated_intervention_done" },{ col: "CC", field: "complicated_intervention_todo" },{ col: "CD", field: "complicated_treatment" },{ col: "CE", field: "complicated_medical_report" },{ col: "CF", field: "consultant" },{ col: "CG", field: "specialist" },{ col: "CH", field: "residents" },{ col: "CI", field: "scrub_nurse" },{ col: "CJ", field: "treatment_type" },{ col: "CK", field: "entered_by" }
         ];
 
         function buildFormData() {
             const form = document.getElementById('patient-form');
             const fd = new FormData();
             const checkboxGroups = new Set(["comorbidities","lab_tests","imaging","transfused","fetal_complications","maternal_complications","ectopic_intervention","complicated_location","preg_conditions","cs_indications"]);
-            const radioFields = new Set(["prev_surgery","parity_type","prev_cs","delivery_mode"]);
+            const radioFields = new Set(["prev_surgery","parity_type","prev_cs"]);   // delivery_mode removed from radioFields
             const multiInputFields = new Set(["specialist","residents"]);
 
             COLUMN_MAP.forEach(item => {
@@ -491,7 +558,7 @@
             return fd;
         }
 
-        // --- VALIDATION INCLUDING DOCTORS LIST CHECK ---
+        // --- Validation (including doctor name check) ---
         function validateForm() {
             let valid = true, firstInvalidField = null;
             function showError(field, msgEl) { field.style.borderColor = '#d32f2f'; if (msgEl) msgEl.style.display = 'block'; valid = false; if (!firstInvalidField) firstInvalidField = field; }
@@ -520,7 +587,7 @@
                 }
             });
 
-            // Doctors list validation
+            // Doctor name validation
             const doctorInputs = document.querySelectorAll('.doctors-input');
             doctorInputs.forEach(input => {
                 const val = input.value.trim();
