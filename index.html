@@ -32,6 +32,18 @@
         .thank-you h2 { color: #2e7d32; margin-bottom: 8px; }
         .thank-you button { margin-top: 20px; max-width: 250px; }
 
+        /* Custom autocomplete */
+        .autocomplete-wrapper { position: relative; }
+        .autocomplete-dropdown {
+            position: absolute; top: 100%; left: 0; right: 0; background: white;
+            border: 1px solid #cfdde9; border-top: none; border-radius: 0 0 8px 8px;
+            max-height: 200px; overflow-y: auto; z-index: 10; display: none;
+        }
+        .autocomplete-dropdown .item {
+            padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f0f0f0;
+        }
+        .autocomplete-dropdown .item:hover, .autocomplete-dropdown .item.active { background: #f0f6ff; }
+
         @media (max-width: 500px) { .form-container { padding: 18px 12px; } h1 { font-size: 20px; } .section { padding: 14px; } .radio-group, .check-group { flex-direction: column; gap: 6px; } }
     </style>
 </head>
@@ -230,39 +242,57 @@
             <!-- Complicated Case Section -->
             <div class="section conditional" id="complicated-section"><div class="section-title">⚠️ Complicated Case</div><div class="form-group"><label class="required">Complicated Outside or Inside</label><div class="check-group" data-group="complicated_location"><label><input type="checkbox" name="complicated_location" value="Outside hospital"> Outside hospital</label><label><input type="checkbox" name="complicated_location" value="Inside hospital"> Inside hospital</label><label><input type="checkbox" name="complicated_location" value="Illegal pregnancy"> Illegal pregnancy</label></div><div class="error-msg">Select at least one</div></div><div class="form-group"><label class="required">Presentation of Complication</label><textarea name="complicated_presentation" rows="2" required></textarea></div><div class="form-group"><label class="required">Intervention Done</label><textarea name="complicated_intervention_done" rows="2" required></textarea></div><div class="form-group"><label class="required">Intervention to be Done</label><textarea name="complicated_intervention_todo" rows="2" required></textarea></div><div class="form-group"><label class="required">Treatment After Interventions</label><textarea name="complicated_treatment" rows="2" required placeholder="Including referral to ICU"></textarea></div><div class="form-group"><label class="required">Medical Report (Arabic)</label><textarea name="complicated_medical_report" rows="2" required placeholder="Surgical/gynecology report number and date"></textarea></div></div>
 
-            <!-- SECTION 12: SURGEONS (autocomplete text inputs with list validation) -->
+            <!-- SECTION 12: SURGEONS (custom autocomplete) -->
             <div class="section">
                 <div class="section-title">👨‍⚕️ SURGEONS</div>
                 <div class="form-group">
                     <label class="required">CONSULTANT</label>
-                    <input type="text" name="consultant" list="doctors-list" class="doctors-input" required>
+                    <div class="autocomplete-wrapper">
+                        <input type="text" name="consultant" class="doctors-input ac-input" required>
+                        <div class="autocomplete-dropdown"></div>
+                    </div>
                     <div class="error-msg">Please select a name from the list</div>
                 </div>
                 <div class="form-group">
                     <label class="required">SPECIALIST</label>
-                    <input type="text" name="specialist" list="doctors-list" class="doctors-input" required>
+                    <div class="autocomplete-wrapper">
+                        <input type="text" name="specialist" class="doctors-input ac-input" required>
+                        <div class="autocomplete-dropdown"></div>
+                    </div>
                     <div class="error-msg">Please select a name from the list</div>
                 </div>
                 <div class="form-group">
                     <label>SPECIALIST (2) <span class="hint">optional</span></label>
-                    <input type="text" name="specialist" list="doctors-list" class="doctors-input">
+                    <div class="autocomplete-wrapper">
+                        <input type="text" name="specialist" class="doctors-input ac-input">
+                        <div class="autocomplete-dropdown"></div>
+                    </div>
                     <div class="error-msg">If entered, must be from the list</div>
                 </div>
                 <div class="form-group">
                     <label class="required">RESIDENTS</label>
-                    <input type="text" name="residents" list="doctors-list" class="doctors-input" required>
+                    <div class="autocomplete-wrapper">
+                        <input type="text" name="residents" class="doctors-input ac-input" required>
+                        <div class="autocomplete-dropdown"></div>
+                    </div>
                     <div class="error-msg">Please select a name from the list</div>
                 </div>
                 <div class="form-group">
                     <label>RESIDENTS (2) <span class="hint">optional</span></label>
-                    <input type="text" name="residents" list="doctors-list" class="doctors-input">
+                    <div class="autocomplete-wrapper">
+                        <input type="text" name="residents" class="doctors-input ac-input">
+                        <div class="autocomplete-dropdown"></div>
+                    </div>
                     <div class="error-msg">If entered, must be from the list</div>
                 </div>
                 <div class="form-group"><label class="required">SCRUB NURSE <span class="hint">ممرضة العمليات-الكشك او القسم المسئوله</span></label><input type="text" name="scrub_nurse" required></div>
                 <div class="form-group"><label class="required">Type of treatment</label><select name="treatment_type" required><option value="">-- Select --</option><option value="طوارئ">طوارئ</option><option value="مجانى(تكافل وكرامة-بحث اجتماعى-----الخ)">مجانى(تكافل وكرامة-بحث اجتماعى-----الخ)</option><option value="علاج بأجر">علاج بأجر</option><option value="تأمين صحى">تأمين صحى</option><option value="نفقة">نفقة</option></select></div>
                 <div class="form-group">
                     <label class="required">Data entered by</label>
-                    <input type="text" name="entered_by" list="doctors-list" class="doctors-input" required>
+                    <div class="autocomplete-wrapper">
+                        <input type="text" name="entered_by" class="doctors-input ac-input" required>
+                        <div class="autocomplete-dropdown"></div>
+                    </div>
                     <div class="error-msg">Please select a name from the list</div>
                 </div>
             </div>
@@ -273,26 +303,20 @@
     <div class="thank-you" id="thank-you"><h2>✅ Data Submitted Successfully</h2><p>The patient data has been recorded.</p><button type="button" onclick="location.reload()">Submit Another Report</button></div>
 </div>
 
-<datalist id="doctors-list"></datalist>
-
 <script>
     (function() {
-        // --- Doctor names (column A only, proper CSV parse) ---
         let doctorNames = [];
 
+        // --- CSV parser ---
         function parseCSV(text) {
             const rows = [];
-            let currentRow = [];
-            let currentField = '';
+            let currentRow = [], currentField = '';
             let inQuotes = false;
             for (let i = 0; i < text.length; i++) {
-                const char = text[i];
-                const nextChar = text[i + 1];
+                const char = text[i], nextChar = text[i + 1];
                 if (inQuotes) {
-                    if (char === '"') {
-                        if (nextChar === '"') { currentField += '"'; i++; }
-                        else inQuotes = false;
-                    } else currentField += char;
+                    if (char === '"') { if (nextChar === '"') { currentField += '"'; i++; } else inQuotes = false; }
+                    else currentField += char;
                 } else {
                     if (char === '"') inQuotes = true;
                     else if (char === ',') { currentRow.push(currentField); currentField = ''; }
@@ -305,6 +329,7 @@
             return rows;
         }
 
+        // --- Load doctor names (column A only) ---
         const DOCTORS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRDOEhW9VetivLm_3iGJgLJ9i86v0tcQcFpHw7TQBjZkWqr0TPM1npBklwEaHac_3LMZePMvOgNzCLF/pub?output=csv";
 
         async function loadDoctorsList() {
@@ -318,18 +343,73 @@
                     if (firstCol) names.push(firstCol);
                 }
                 doctorNames = [...new Set(names)];
-                const datalist = document.getElementById('doctors-list');
-                datalist.innerHTML = '';
-                doctorNames.forEach(name => {
-                    const opt = document.createElement('option');
-                    opt.value = name;
-                    datalist.appendChild(opt);
-                });
-            } catch (err) {
-                console.warn('Could not load doctors list:', err);
-            }
+            } catch (err) { console.warn('Could not load doctors list:', err); }
         }
-        loadDoctorsList();
+
+        // --- Custom autocomplete (word‑by‑word, starts‑with) ---
+        function initAutocomplete(input) {
+            const wrapper = input.parentElement;
+            const dropdown = wrapper.querySelector('.autocomplete-dropdown');
+            let activeIndex = -1;
+
+            function filterSuggestions(value) {
+                const tokens = value.trim().split(/\s+/);
+                if (tokens.length === 0 || (tokens.length === 1 && tokens[0] === '')) return [];
+                return doctorNames.filter(name => {
+                    const nameWords = name.split(/\s+/);
+                    for (let i = 0; i < tokens.length; i++) {
+                        const token = tokens[i].toLowerCase();
+                        if (i >= nameWords.length) return false;
+                        if (!nameWords[i].toLowerCase().startsWith(token)) return false;
+                    }
+                    return true;
+                });
+            }
+
+            function showDropdown(suggestions) {
+                dropdown.innerHTML = '';
+                if (suggestions.length === 0) { dropdown.style.display = 'none'; return; }
+                suggestions.forEach(name => {
+                    const div = document.createElement('div');
+                    div.className = 'item';
+                    div.textContent = name;
+                    div.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        input.value = name;
+                        dropdown.style.display = 'none';
+                        activeIndex = -1;
+                    });
+                    dropdown.appendChild(div);
+                });
+                dropdown.style.display = 'block';
+                activeIndex = -1;
+            }
+
+            input.addEventListener('input', () => {
+                const suggestions = filterSuggestions(input.value);
+                showDropdown(suggestions);
+            });
+
+            input.addEventListener('keydown', (e) => {
+                const items = dropdown.querySelectorAll('.item');
+                if (items.length === 0) return;
+                if (e.key === 'ArrowDown') { e.preventDefault(); activeIndex = Math.min(activeIndex + 1, items.length - 1); updateActive(items); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); activeIndex = Math.max(activeIndex - 1, -1); updateActive(items); }
+                else if (e.key === 'Enter') {
+                    if (activeIndex >= 0) { e.preventDefault(); input.value = items[activeIndex].textContent; dropdown.style.display = 'none'; activeIndex = -1; }
+                } else if (e.key === 'Escape') { dropdown.style.display = 'none'; activeIndex = -1; }
+            });
+
+            function updateActive(items) { items.forEach((item, i) => item.classList.toggle('active', i === activeIndex)); }
+
+            document.addEventListener('click', (e) => {
+                if (!wrapper.contains(e.target)) { dropdown.style.display = 'none'; activeIndex = -1; }
+            });
+        }
+
+        loadDoctorsList().then(() => {
+            document.querySelectorAll('.ac-input').forEach(input => initAutocomplete(input));
+        });
 
         // --- Default dates & day ---
         (function() {
@@ -350,20 +430,8 @@
                 let show = false;
                 if (trigger.tagName === 'SELECT') show = (trigger.value === conditionValue);
                 else { const checked = document.querySelector(triggerSelector + ':checked'); show = (checked && checked.value === conditionValue); }
-                if (show) {
-                    targetBox.classList.add('visible');
-                    if (fieldSelector) targetBox.querySelectorAll(fieldSelector).forEach(f => f.setAttribute('required', ''));
-                } else {
-                    targetBox.classList.remove('visible');
-                    if (fieldSelector) {
-                        targetBox.querySelectorAll(fieldSelector).forEach(f => {
-                            f.removeAttribute('required');
-                            if (f.type !== 'radio' && f.type !== 'checkbox') f.value = '';
-                        });
-                    }
-                    targetBox.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none');
-                    targetBox.querySelectorAll('input, select, textarea').forEach(e => e.style.borderColor = '#cfdde9');
-                }
+                if (show) { targetBox.classList.add('visible'); if (fieldSelector) targetBox.querySelectorAll(fieldSelector).forEach(f => f.setAttribute('required', '')); }
+                else { targetBox.classList.remove('visible'); if (fieldSelector) { targetBox.querySelectorAll(fieldSelector).forEach(f => { f.removeAttribute('required'); if (f.type !== 'radio' && f.type !== 'checkbox') f.value = ''; }); } targetBox.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none'); targetBox.querySelectorAll('input, select, textarea').forEach(e => e.style.borderColor = '#cfdde9'); }
             };
             if (trigger.tagName === 'SELECT') trigger.addEventListener('change', update);
             else document.querySelectorAll(triggerSelector).forEach(r => r.addEventListener('change', update));
@@ -380,23 +448,13 @@
         const csIndicationsBox = document.getElementById('cs-indications-box');
         if (deliveryModeSelect && csIndicationsBox) {
             const toggleCSIndications = () => {
-                if (deliveryModeSelect.value === 'C/S') {
-                    csIndicationsBox.classList.add('visible');
-                    csIndicationsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.setAttribute('required', ''));
-                } else {
-                    csIndicationsBox.classList.remove('visible');
-                    csIndicationsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                        cb.removeAttribute('required');
-                        cb.checked = false;
-                    });
-                    csIndicationsBox.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none');
-                }
+                if (deliveryModeSelect.value === 'C/S') { csIndicationsBox.classList.add('visible'); csIndicationsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.setAttribute('required', '')); }
+                else { csIndicationsBox.classList.remove('visible'); csIndicationsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.removeAttribute('required'); cb.checked = false; }); csIndicationsBox.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none'); }
             };
             deliveryModeSelect.addEventListener('change', toggleCSIndications);
             toggleCSIndications();
         }
 
-        // Management & obstetric sections
         const caseTypeSelect = document.getElementById('case_type');
         const obstetricSection = document.getElementById('obstetric-section');
         const gynecologicalSection = document.getElementById('gynecological-section');
@@ -412,73 +470,29 @@
             const caseVal = caseTypeSelect.value;
             if (caseVal === 'Obstetric case') {
                 obstetricSection.classList.add('visible');
-                obstetricSection.querySelectorAll('input, select, textarea').forEach(el => {
-                    if (!el.closest('#delivery-section') && !el.closest('#abortion-section') && !el.closest('#vesicular-section') && !el.closest('#ectopic-section') && !el.closest('#followup-section')) {
-                        el.setAttribute('required', '');
-                    }
-                });
+                obstetricSection.querySelectorAll('input, select, textarea').forEach(el => { if (!el.closest('#delivery-section') && !el.closest('#abortion-section') && !el.closest('#vesicular-section') && !el.closest('#ectopic-section') && !el.closest('#followup-section')) el.setAttribute('required', ''); });
                 toggleAdmissionReasonSections();
-            } else {
-                obstetricSection.classList.remove('visible');
-                clearAllSubSections(obstetricSection);
-            }
-            if (caseVal === 'Gynecological case') {
-                gynecologicalSection.classList.add('visible');
-                gynecologicalSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', ''));
-            } else {
-                gynecologicalSection.classList.remove('visible');
-                gynecologicalSection.querySelectorAll('input, select, textarea').forEach(el => {
-                    el.removeAttribute('required');
-                    if (el.type !== 'radio' && el.type !== 'checkbox') el.value = '';
-                });
-            }
-            if (caseVal === 'Complicated case(outside or inside)') {
-                complicatedSection.classList.add('visible');
-                complicatedSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', ''));
-            } else {
-                complicatedSection.classList.remove('visible');
-                complicatedSection.querySelectorAll('input, select, textarea').forEach(el => {
-                    el.removeAttribute('required');
-                    if (el.type !== 'radio' && el.type !== 'checkbox') el.value = '';
-                });
-            }
+            } else { obstetricSection.classList.remove('visible'); clearAllSubSections(obstetricSection); }
+            if (caseVal === 'Gynecological case') { gynecologicalSection.classList.add('visible'); gynecologicalSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', '')); }
+            else { gynecologicalSection.classList.remove('visible'); gynecologicalSection.querySelectorAll('input, select, textarea').forEach(el => { el.removeAttribute('required'); if (el.type !== 'radio' && el.type !== 'checkbox') el.value = ''; }); }
+            if (caseVal === 'Complicated case(outside or inside)') { complicatedSection.classList.add('visible'); complicatedSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', '')); }
+            else { complicatedSection.classList.remove('visible'); complicatedSection.querySelectorAll('input, select, textarea').forEach(el => { el.removeAttribute('required'); if (el.type !== 'radio' && el.type !== 'checkbox') el.value = ''; }); }
         }
-        function clearAllSubSections(section) {
-            [deliverySection, abortionSection, vesicularSection, ectopicSection, followupSection].forEach(sec => {
-                sec.classList.remove('visible');
-                sec.querySelectorAll('input, select, textarea').forEach(el => {
-                    el.removeAttribute('required');
-                    if (el.type !== 'radio' && el.type !== 'checkbox') el.value = '';
-                });
-            });
-        }
+        function clearAllSubSections(section) { [deliverySection, abortionSection, vesicularSection, ectopicSection, followupSection].forEach(sec => { sec.classList.remove('visible'); sec.querySelectorAll('input, select, textarea').forEach(el => { el.removeAttribute('required'); if (el.type !== 'radio' && el.type !== 'checkbox') el.value = ''; }); }); }
         function toggleAdmissionReasonSections() {
             const reason = admissionReasonSelect.value;
             clearAllSubSections(obstetricSection);
-            if (reason === 'For delivery') {
-                deliverySection.classList.add('visible');
-                deliverySection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', ''));
-                const dm = document.getElementById('delivery_mode');
-                if (dm) dm.dispatchEvent(new Event('change'));
-            } else if (reason === 'Abortion') {
-                abortionSection.classList.add('visible');
-                abortionSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', ''));
-            } else if (reason === 'Vesicular mole') {
-                vesicularSection.classList.add('visible');
-                vesicularSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', ''));
-            } else if (reason === 'Ectopic pregnancy') {
-                ectopicSection.classList.add('visible');
-                ectopicSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', ''));
-            } else if (reason === 'For follow up') {
-                followupSection.classList.add('visible');
-                followupSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', ''));
-            }
+            if (reason === 'For delivery') { deliverySection.classList.add('visible'); deliverySection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', '')); const dm = document.getElementById('delivery_mode'); if (dm) dm.dispatchEvent(new Event('change')); }
+            else if (reason === 'Abortion') { abortionSection.classList.add('visible'); abortionSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', '')); }
+            else if (reason === 'Vesicular mole') { vesicularSection.classList.add('visible'); vesicularSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', '')); }
+            else if (reason === 'Ectopic pregnancy') { ectopicSection.classList.add('visible'); ectopicSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', '')); }
+            else if (reason === 'For follow up') { followupSection.classList.add('visible'); followupSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', '')); }
         }
         caseTypeSelect.addEventListener('change', toggleCaseSections);
         admissionReasonSelect.addEventListener('change', toggleAdmissionReasonSections);
         toggleCaseSections();
 
-        // --- Exclusive "None" logic for checkbox groups ---
+        // --- Exclusive "None" logic ---
         function addNoneExclusive(groupSelector, noneValue) {
             const group = document.querySelector(groupSelector);
             if (!group) return;
@@ -486,44 +500,31 @@
                 const clicked = e.target;
                 const checkboxes = group.querySelectorAll('input[type="checkbox"]');
                 if (clicked.value === noneValue) {
-                    if (clicked.checked) {
-                        checkboxes.forEach(cb => { if (cb !== clicked) cb.checked = false; });
-                    }
+                    if (clicked.checked) checkboxes.forEach(cb => { if (cb !== clicked) cb.checked = false; });
                 } else {
-                    if (clicked.checked) {
-                        const noneCb = group.querySelector(`input[value="${noneValue}"]`);
-                        if (noneCb) noneCb.checked = false;
-                    }
+                    if (clicked.checked) { const noneCb = group.querySelector(`input[value="${noneValue}"]`); if (noneCb) noneCb.checked = false; }
                 }
             });
         }
-
         addNoneExclusive('[data-group="comorbidities"]', 'None');
         addNoneExclusive('[data-group="preg_conditions"]', 'NO');
         addNoneExclusive('[data-group="fetal_complications"]', 'None');
         addNoneExclusive('[data-group="maternal_complications"]', 'None');
 
-        // --- Show/hide "other" for pregnancy conditions ---
+        // "other" field for pregnancy conditions
         const pregConditionsGroup = document.querySelector('[data-group="preg_conditions"]');
         if (pregConditionsGroup) {
             pregConditionsGroup.addEventListener('change', () => {
                 const otherCb = pregConditionsGroup.querySelector('input[value="other"]');
                 const otherBox = document.getElementById('preg-other-box');
                 if (otherCb && otherBox) {
-                    if (otherCb.checked) {
-                        otherBox.classList.add('visible');
-                        otherBox.querySelector('input').setAttribute('required', '');
-                    } else {
-                        otherBox.classList.remove('visible');
-                        otherBox.querySelector('input').removeAttribute('required');
-                        otherBox.querySelector('input').value = '';
-                        otherBox.querySelector('.error-msg').style.display = 'none';
-                    }
+                    if (otherCb.checked) { otherBox.classList.add('visible'); otherBox.querySelector('input').setAttribute('required', ''); }
+                    else { otherBox.classList.remove('visible'); otherBox.querySelector('input').removeAttribute('required'); otherBox.querySelector('input').value = ''; otherBox.querySelector('.error-msg').style.display = 'none'; }
                 }
             });
         }
 
-        // --- Column map & form data ---
+        // --- Column map ---
         const COLUMN_MAP = [
             { col: "B", field: "patient_name" },{ col: "C", field: "age" },{ col: "D", field: "address" },{ col: "E", field: "admission_date" },{ col: "F", field: "ticket_id" },{ col: "G", field: "shift_day" },{ col: "H", field: "comorbidities" },{ col: "I", field: "past_medical" },{ col: "J", field: "prev_surgery" },{ col: "K", field: "surgery_type" },{ col: "L", field: "parity_type" },{ col: "M", field: "exact_parity" },{ col: "N", field: "living_children" },{ col: "O", field: "living_males" },{ col: "P", field: "last_delivery_time" },{ col: "Q", field: "last_abortion_time" },{ col: "R", field: "prev_cs" },{ col: "S", field: "cs_number" },{ col: "T", field: "sbp" },{ col: "U", field: "dbp" },{ col: "V", field: "pulse" },{ col: "W", field: "temperature" },{ col: "X", field: "resp_rate" },{ col: "Y", field: "consciousness" },{ col: "Z", field: "o2_sat" },{ col: "AA", field: "urine_output" },{ col: "AB", field: "meow_score" },{ col: "AC", field: "lab_tests" },{ col: "AD", field: "positive_lab_data" },{ col: "AE", field: "imaging" },{ col: "AF", field: "positive_imaging_data" },{ col: "AG", field: "blood_transfusion" },{ col: "AH", field: "blood_group" },{ col: "AI", field: "transfused" },{ col: "AJ", field: "case_type" },{ col: "AK", field: "preg_conditions" },{ col: "AL", field: "preg_condition_other" },{ col: "AM", field: "gestational_age" },{ col: "AN", field: "exact_gestational_age" },{ col: "AO", field: "admission_reason" },{ col: "AP", field: "labour_onset" },{ col: "AQ", field: "pregnancy_type" },{ col: "AR", field: "fetal_presentation" },{ col: "AS", field: "delivery_date" },{ col: "AT", field: "delivery_mode" },{ col: "AU", field: "cs_indications" },{ col: "AV", field: "fetus_gender" },{ col: "AW", field: "fetal_complications" },{ col: "AX", field: "maternal_complications" },{ col: "AY", field: "delivery_report" },{ col: "AZ", field: "robson" },{ col: "BA", field: "contraceptive" },{ col: "BB", field: "contraceptive_refusal_reason" },{ col: "BC", field: "abortion_type" },{ col: "BD", field: "abortion_intervention" },{ col: "BE", field: "abortion_intervention_details" },{ col: "BF", field: "abortion_treatment" },{ col: "BG", field: "abortion_contraceptive" },{ col: "BH", field: "vesicular_ga_lmp" },{ col: "BI", field: "vesicular_type" },{ col: "BJ", field: "vesicular_intervention" },{ col: "BK", field: "vesicular_medications" },{ col: "BL", field: "vesicular_contraceptive" },{ col: "BM", field: "ectopic_type" },{ col: "BN", field: "ectopic_disturbed" },{ col: "BO", field: "ectopic_intervention" },{ col: "BP", field: "ectopic_intervention_brief" },{ col: "BQ", field: "ectopic_contraceptive" },{ col: "BR", field: "followup_indication" },{ col: "BS", field: "followup_treatment" },{ col: "BT", field: "gyn_diagnosis" },{ col: "BU", field: "gyn_intervention" },{ col: "BV", field: "gyn_op_date" },{ col: "BW", field: "gyn_complications" },{ col: "BX", field: "gyn_report" },{ col: "BY", field: "gyn_treatment" },{ col: "BZ", field: "complicated_location" },{ col: "CA", field: "complicated_presentation" },{ col: "CB", field: "complicated_intervention_done" },{ col: "CC", field: "complicated_intervention_todo" },{ col: "CD", field: "complicated_treatment" },{ col: "CE", field: "complicated_medical_report" },{ col: "CF", field: "consultant" },{ col: "CG", field: "specialist" },{ col: "CH", field: "residents" },{ col: "CI", field: "scrub_nurse" },{ col: "CJ", field: "treatment_type" },{ col: "CK", field: "entered_by" }
         ];
@@ -532,7 +533,7 @@
             const form = document.getElementById('patient-form');
             const fd = new FormData();
             const checkboxGroups = new Set(["comorbidities","lab_tests","imaging","transfused","fetal_complications","maternal_complications","ectopic_intervention","complicated_location","preg_conditions","cs_indications"]);
-            const radioFields = new Set(["prev_surgery","parity_type","prev_cs"]);   // delivery_mode removed from radioFields
+            const radioFields = new Set(["prev_surgery","parity_type","prev_cs"]);   // delivery_mode removed
             const multiInputFields = new Set(["specialist","residents"]);
 
             COLUMN_MAP.forEach(item => {
@@ -603,6 +604,7 @@
             return valid;
         }
 
+        // --- Submission ---
         const form = document.getElementById('patient-form');
         const thankYou = document.getElementById('thank-you');
         const formContent = document.getElementById('form-content');
