@@ -45,6 +45,10 @@
         .autocomplete-dropdown .item:hover, .autocomplete-dropdown .item.active { background: #f0f6ff; }
 
         @media (max-width: 500px) { .form-container { padding: 18px 12px; } h1 { font-size: 20px; } .section { padding: 14px; } .radio-group, .check-group { flex-direction: column; gap: 6px; } }
+        .iso-date-wrap{position:relative;display:block}
+        .iso-date{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;display:block;font-size:0.95rem;color:#334;direction:ltr}
+        .iso-date-wrap input[type="date"]{padding-inline-start:12px;padding-inline-end:12px}
+        .iso-date-hide-native{color:transparent;text-shadow:none}
     </style>
 </head>
 <body>
@@ -424,6 +428,48 @@
             const daySelect = document.getElementById('shift_day');
             if (daySelect && !daySelect.value) daySelect.value = dayMap[today.getDay()];
         })();
+
+        // Format a date-like value into "yyyy Month dd" (e.g., 2026 June 11).
+        function formatIsoToYMonthD(v){
+            if(!v) return '';
+            var d = new Date(v);
+            if(isNaN(d.getTime())) return v;
+            var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            return d.getFullYear() + ' ' + months[d.getMonth()] + ' ' + String(d.getDate()).padStart(2,'0');
+        }
+
+        // Ensure visible human-readable date (yyyy Month dd) overlay for date inputs.
+        function attachIsoDateDisplays(root){
+            (root||document).querySelectorAll('input[type="date"]').forEach(function(el){
+                if(el.dataset.isoAttached) return;
+                el.dataset.isoAttached = '1';
+
+                // create wrapper to contain input and overlay
+                var wrap = document.createElement('div');
+                wrap.className = 'iso-date-wrap';
+                wrap.style.display = getComputedStyle(el).display === 'block' ? 'block' : 'inline-block';
+                el.parentNode.insertBefore(wrap, el);
+                wrap.appendChild(el);
+
+                // create overlay span
+                var span = document.createElement('span');
+                span.className = 'iso-date';
+                wrap.appendChild(span);
+
+                var update = function(){ span.textContent = el.value ? formatIsoToYMonthD(el.value) : ''; };
+                // visually hide the native date text so overlay becomes primary visible value
+                el.classList.add('iso-date-hide-native');
+                el.addEventListener('input', update);
+                el.addEventListener('change', update);
+                el.addEventListener('blur', update);
+                // forward clicks on the wrapper to the native control so picker opens
+                wrap.addEventListener('click', function(){ try{ el.showPicker && el.showPicker(); el.focus(); }catch(e){ el.focus(); } });
+                // initialize
+                update();
+            });
+        }
+        // attach on load
+        document.addEventListener('DOMContentLoaded', function(){ attachIsoDateDisplays(); });
 
         // --- Conditional logic ---
         function setConditional(triggerSelector, conditionValue, targetBox, fieldSelector = null) {
