@@ -23,6 +23,12 @@
         .radio-group, .check-group { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 6px; }
         .radio-group label, .check-group label { font-weight: 400; display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; }
         .radio-group input, .check-group input { width: auto; margin: 0; }
+
+        /* Improve touch responsiveness for checkbox/label taps */
+        .check-group label, .check-group input[type="checkbox"] {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
         .conditional { display: none; animation: fadeIn 0.3s ease; }
         .conditional.visible { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
@@ -364,15 +370,6 @@
         }
 
         // --- Custom autocomplete (word‑by‑word, starts‑with) ---
-        // small utility: debounce to avoid expensive work on every keystroke
-        function debounce(fn, wait) {
-            let t = null;
-            return function(...args) {
-                clearTimeout(t);
-                t = setTimeout(() => fn.apply(this, args), wait);
-            };
-        }
-
         function initAutocomplete(input) {
             const wrapper = input.parentElement;
             const dropdown = wrapper.querySelector('.autocomplete-dropdown');
@@ -411,11 +408,10 @@
                 activeIndex = -1;
             }
 
-            const onInput = debounce(() => {
+            input.addEventListener('input', () => {
                 const suggestions = filterSuggestions(input.value);
                 showDropdown(suggestions);
-            }, 150);
-            input.addEventListener('input', onInput, { passive: true });
+            });
 
             input.addEventListener('keydown', (e) => {
                 const items = dropdown.querySelectorAll('.item');
@@ -565,13 +561,25 @@
         function addNoneExclusive(groupSelector, noneValue) {
             const group = document.querySelector(groupSelector);
             if (!group) return;
+            // Cache checkboxes to avoid repeated DOM queries
+            const checkboxes = Array.from(group.querySelectorAll('input[type="checkbox"]'));
+            const noneCb = checkboxes.find(cb => cb.value === noneValue) || null;
+
             group.addEventListener('change', (e) => {
                 const clicked = e.target;
-                const checkboxes = group.querySelectorAll('input[type="checkbox"]');
+                if (!clicked || clicked.type !== 'checkbox') return;
+
+                // If the 'None' option was clicked and checked, uncheck others (fast loop over cached list)
                 if (clicked.value === noneValue) {
-                    if (clicked.checked) checkboxes.forEach(cb => { if (cb !== clicked) cb.checked = false; });
+                    if (clicked.checked) {
+                        for (let i = 0; i < checkboxes.length; i++) {
+                            const cb = checkboxes[i];
+                            if (cb !== clicked && cb.checked) cb.checked = false;
+                        }
+                    }
                 } else {
-                    if (clicked.checked) { const noneCb = group.querySelector(`input[value="${noneValue}"]`); if (noneCb) noneCb.checked = false; }
+                    // If any other checkbox is checked, ensure the 'None' checkbox is unchecked
+                    if (clicked.checked && noneCb && noneCb.checked) noneCb.checked = false;
                 }
             });
         }
@@ -738,12 +746,14 @@
             renderInstallButton();
         });
 
-        // Setup PWA icon, manifest and (optional) service worker during idle time
-        const runPWASetup = () => {
-            try { setupPWA(); } catch (e) { console.error('PWA Setup failed, but page is running:', e); }
-        };
-        if ('requestIdleCallback' in window) requestIdleCallback(runPWASetup, { timeout: 2000 });
-        else setTimeout(runPWASetup, 1500);
+        // Setup PWA icon, manifest and (optional) service worker
+        setTimeout(() => {
+            try {
+                setupPWA();
+            } catch (e) {
+                console.error('PWA Setup failed, but page is running:', e);
+            }
+        }, 100);
 
         function setupPWA() {
             const canvas = document.createElement('canvas');
@@ -790,14 +800,12 @@
             manifestLink.href = manifestUrl;
             document.head.appendChild(manifestLink);
 
-            // Optional Service Worker: register during idle so it doesn't compete with UI
+            // Optional Service Worker (lightweight in-memory stub)
             if ('serviceWorker' in navigator) {
                 const swCode = `self.addEventListener('install', e => self.skipWaiting());\nself.addEventListener('activate', e => e.waitUntil(clients.claim()));\nself.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));`;
                 const swBlob = new Blob([swCode], { type: 'application/javascript' });
                 const swUrl = URL.createObjectURL(swBlob);
-                const registerSW = () => navigator.serviceWorker.register(swUrl).catch(() => {});
-                if ('requestIdleCallback' in window) requestIdleCallback(registerSW, { timeout: 3000 });
-                else setTimeout(registerSW, 3000);
+                navigator.serviceWorker.register(swUrl).catch(() => {});
             }
             console.log('✅ PWA icon and manifest injected');
         }
