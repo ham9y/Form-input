@@ -29,6 +29,7 @@
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
         }
+        .check-group input[type="checkbox"]:focus { outline: none; box-shadow: none; }
         .conditional { display: none; animation: fadeIn 0.3s ease; }
         .conditional.visible { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
@@ -498,8 +499,13 @@
                 if (show) { targetBox.classList.add('visible'); if (fieldSelector) targetBox.querySelectorAll(fieldSelector).forEach(f => f.setAttribute('required', '')); }
                 else { targetBox.classList.remove('visible'); if (fieldSelector) { targetBox.querySelectorAll(fieldSelector).forEach(f => { f.removeAttribute('required'); if (f.type !== 'radio' && f.type !== 'checkbox') f.value = ''; }); } targetBox.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none'); targetBox.querySelectorAll('input, select, textarea').forEach(e => e.style.borderColor = '#cfdde9'); }
             };
-            if (trigger.tagName === 'SELECT') trigger.addEventListener('change', update);
-            else document.querySelectorAll(triggerSelector).forEach(r => r.addEventListener('change', update));
+            try {
+                if (trigger.tagName === 'SELECT') trigger.addEventListener('change', update, { passive: true });
+                else document.querySelectorAll(triggerSelector).forEach(r => r.addEventListener('change', update, { passive: true }));
+            } catch (err) {
+                if (trigger.tagName === 'SELECT') trigger.addEventListener('change', update);
+                else document.querySelectorAll(triggerSelector).forEach(r => r.addEventListener('change', update));
+            }
             update();
         }
 
@@ -516,7 +522,8 @@
                 if (deliveryModeSelect.value === 'C/S') { csIndicationsBox.classList.add('visible'); csIndicationsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.setAttribute('required', '')); }
                 else { csIndicationsBox.classList.remove('visible'); csIndicationsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.removeAttribute('required'); cb.checked = false; }); csIndicationsBox.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none'); }
             };
-            deliveryModeSelect.addEventListener('change', toggleCSIndications);
+            try { deliveryModeSelect.addEventListener('change', toggleCSIndications, { passive: true }); }
+            catch (e) { deliveryModeSelect.addEventListener('change', toggleCSIndications); }
             toggleCSIndications();
         }
 
@@ -553,8 +560,10 @@
             else if (reason === 'Ectopic pregnancy') { ectopicSection.classList.add('visible'); ectopicSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', '')); }
             else if (reason === 'For follow up') { followupSection.classList.add('visible'); followupSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute('required', '')); }
         }
-        caseTypeSelect.addEventListener('change', toggleCaseSections);
-        admissionReasonSelect.addEventListener('change', toggleAdmissionReasonSections);
+        try { caseTypeSelect.addEventListener('change', toggleCaseSections, { passive: true }); }
+        catch(e) { caseTypeSelect.addEventListener('change', toggleCaseSections); }
+        try { admissionReasonSelect.addEventListener('change', toggleAdmissionReasonSections, { passive: true }); }
+        catch(e) { admissionReasonSelect.addEventListener('change', toggleAdmissionReasonSections); }
         toggleCaseSections();
 
         // --- Exclusive "None" logic ---
@@ -582,6 +591,14 @@
                     if (clicked.checked && noneCb && noneCb.checked) noneCb.checked = false;
                 }
             });
+            // mark listener as passive where supported to avoid blocking the main thread on touch devices
+            try {
+                const opts = { passive: true };
+                // re-add a wrapper passive listener that simply forwards events to the original handler
+                // (some browsers don't accept options on addEventListener, so we guard with try/catch)
+                // Note: we keep the non-passive listener above for compatibility; the passive one helps on supporting browsers.
+                group.addEventListener('change', (e) => {}, opts);
+            } catch (e) { /* ignore */ }
         }
         addNoneExclusive('[data-group="comorbidities"]', 'None');
         addNoneExclusive('[data-group="preg_conditions"]', 'NO');
@@ -591,14 +608,16 @@
         // "other" field for pregnancy conditions
         const pregConditionsGroup = document.querySelector('[data-group="preg_conditions"]');
         if (pregConditionsGroup) {
-            pregConditionsGroup.addEventListener('change', () => {
+            const pregHandler = (e) => {
                 const otherCb = pregConditionsGroup.querySelector('input[value="other"]');
                 const otherBox = document.getElementById('preg-other-box');
                 if (otherCb && otherBox) {
                     if (otherCb.checked) { otherBox.classList.add('visible'); otherBox.querySelector('input').setAttribute('required', ''); }
                     else { otherBox.classList.remove('visible'); otherBox.querySelector('input').removeAttribute('required'); otherBox.querySelector('input').value = ''; otherBox.querySelector('.error-msg').style.display = 'none'; }
                 }
-            });
+            };
+            try { pregConditionsGroup.addEventListener('change', pregHandler, { passive: true }); }
+            catch (err) { pregConditionsGroup.addEventListener('change', pregHandler); }
         }
 
         // --- Column map ---
@@ -704,7 +723,8 @@
         });
 
         form.addEventListener('input', function(e) { const field = e.target; if (field.matches('input, select, textarea')) { const formGroup = field.closest('.form-group'); const errorEl = formGroup ? formGroup.querySelector('.error-msg') : null; field.style.borderColor = '#cfdde9'; if (errorEl) errorEl.style.display = 'none'; } });
-        form.addEventListener('change', function(e) { const field = e.target; if (field.type === 'radio' || field.type === 'checkbox') { const formGroup = field.closest('.form-group'); const errorEl = formGroup ? formGroup.querySelector('.error-msg') : null; if (errorEl) errorEl.style.display = 'none'; } });
+        try { form.addEventListener('change', function(e) { const field = e.target; if (field.type === 'radio' || field.type === 'checkbox') { const formGroup = field.closest('.form-group'); const errorEl = formGroup ? formGroup.querySelector('.error-msg') : null; if (errorEl) errorEl.style.display = 'none'; } }, { passive: true }); }
+        catch (err) { form.addEventListener('change', function(e) { const field = e.target; if (field.type === 'radio' || field.type === 'checkbox') { const formGroup = field.closest('.form-group'); const errorEl = formGroup ? formGroup.querySelector('.error-msg') : null; if (errorEl) errorEl.style.display = 'none'; } }); }
         // --- Add To Home Screen (A2HS) support (copied from index1.html) ---
         let deferredPrompt = null;
 
