@@ -728,6 +728,70 @@
             renderInstallButton();
         });
 
+        // Setup PWA icon, manifest and (optional) service worker
+        setTimeout(() => {
+            try {
+                setupPWA();
+            } catch (e) {
+                console.error('PWA Setup failed, but page is running:', e);
+            }
+        }, 100);
+
+        function setupPWA() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            // Transparent background (no orange)
+            ctx.clearRect(0, 0, 512, 512);
+            // Larger clipboard emoji centered
+            ctx.font = 'bold 420px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            // Draw emoji; color emoji rendering depends on platform
+            ctx.fillText('📋', 256, 266);
+            const iconUrl = canvas.toDataURL('image/png');
+
+            // Favicon / Apple touch icon
+            let faviconLink = document.querySelector("link[rel*='icon']") || document.createElement('link');
+            faviconLink.type = 'image/png';
+            faviconLink.rel = 'shortcut icon';
+            faviconLink.href = iconUrl;
+            document.head.appendChild(faviconLink);
+
+            let appleLink = document.querySelector("link[rel='apple-touch-icon']") || document.createElement('link');
+            appleLink.rel = 'apple-touch-icon';
+            appleLink.href = iconUrl;
+            document.head.appendChild(appleLink);
+
+            // Manifest
+            const manifest = {
+                name: document.title || 'App',
+                short_name: document.title || 'App',
+                start_url: '.',
+                display: 'standalone',
+                background_color: '#ffffff',
+                theme_color: '#ff7675',
+                orientation: 'portrait',
+                icons: [{ src: iconUrl, sizes: '512x512', type: 'image/png' }]
+            };
+            const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+            const manifestUrl = URL.createObjectURL(manifestBlob);
+            const manifestLink = document.createElement('link');
+            manifestLink.rel = 'manifest';
+            manifestLink.href = manifestUrl;
+            document.head.appendChild(manifestLink);
+
+            // Optional Service Worker (lightweight in-memory stub)
+            if ('serviceWorker' in navigator) {
+                const swCode = `self.addEventListener('install', e => self.skipWaiting());\nself.addEventListener('activate', e => e.waitUntil(clients.claim()));\nself.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));`;
+                const swBlob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(swBlob);
+                navigator.serviceWorker.register(swUrl).catch(() => {});
+            }
+            console.log('✅ PWA icon and manifest injected');
+        }
+
     })();
 </script>
 </body>
