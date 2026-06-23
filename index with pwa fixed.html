@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OBS & GYN Patient Report – Single Page</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #eef2f7;
+            display: flex;
+            justify-content: center;
+            padding: 15px;
+            direction: rtl;
+            overscroll-behavior: contain;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            max-width: 750px;
+            width: 100%;
+            padding: 25px 20px;
+            margin: 10px 0;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .form-container * {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #1a3c5e;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #5e7289;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: #0f2a44;
+            border-bottom: 2px solid #dce5f0;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #1a3c5e;
+            font-size: 15px;
+        }
+
+        label .hint {
+            font-weight: 400;
+            color: #64748b;
+            font-size: 13px;
+            display: block;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .required:after {
+            content: " *";
+            color: #d32f2f;
+            font-weight: bold;
+        }
+
+        input,
+        select,
+        textarea,
+        button {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #cfdde9;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            background: white;
+            transition: 0.2s;
+        }
+
+        /* Checkboxes and radios – keep native size, no forced min */
+        input[type="checkbox"],
+        input[type="radio"] {
+            width: auto;
+            padding: 0;
+            margin: 0 4px 0 8px;
+            flex-shrink: 0;
+            cursor: pointer;
+            touch-action: auto;
+            pointer-events: auto;
+            -webkit-appearance: auto;
+            appearance: auto;
+            border: none;
+            background: transparent;
+            border-radius: 0;
+            /* remove any forced min-size */
+            min-width: auto;
+            min-height: auto;
+            height: auto;
+        }
+
+        .radio-group label,
+        .check-group label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-weight: 400;
+            font-size: 14px;
+            touch-action: manipulation;
+            pointer-events: auto;
+            padding: 2px 0;
+            /* minimal vertical padding */
+            min-height: auto;
+            /* no forced height */
+        }
+
+        .radio-group,
+        .check-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 16px;
+            margin-top: 6px;
+            touch-action: manipulation;
+        }
+
+        .radio-group label *,
+        .check-group label * {
+            pointer-events: none;
+        }
+
+        .radio-group label input,
+        .check-group label input {
+            pointer-events: auto;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #3b6eb0;
+            box-shadow: 0 0 0 3px rgba(59, 110, 176, 0.15);
+        }
+
+        .error-msg {
+            color: #d32f2f;
+            font-size: 13px;
+            margin-top: 4px;
+            display: none;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .conditional {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .conditional.visible {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        button {
+            background: #1a3c5e;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            padding: 14px;
+            font-size: 17px;
+            margin-top: 10px;
+            transition: background 0.2s;
+            touch-action: manipulation;
+        }
+
+        button:hover {
+            background: #0f2a44;
+        }
+
+        .thank-you {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .thank-you h2 {
+            color: #2e7d32;
+            margin-bottom: 8px;
+        }
+
+        .thank-you button {
+            margin-top: 20px;
+            max-width: 250px;
+        }
+
+        /* Custom autocomplete */
+        .autocomplete-wrapper {
+            position: relative;
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #cfdde9;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+        }
+
+        .autocomplete-dropdown .item {
+            padding: 10px 14px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            touch-action: manipulation;
+        }
+
+        .autocomplete-dropdown .item:hover,
+        .autocomplete-dropdown .item.active {
+            background: #f0f6ff;
+        }
+
+        /* Mobile adjustments – keep sizes normal, only adjust layout if needed */
+        @media (max-width: 500px) {
+            .form-container {
+                padding: 18px 12px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+            .section {
+                padding: 14px;
+            }
+            .radio-group,
+            .check-group {
+                flex-direction: column;
+                gap: 4px;
+            }
+            /* No extra min-height or padding overrides – keep native sizes */
+            .radio-group label,
+            .check-group label {
+                padding: 2px 0;
+                /* minimal padding */
+                min-height: auto;
+            }
+            input[type="checkbox"],
+            input[type="radio"] {
+                min-width: auto;
+                min-height: auto;
+                width: auto;
+                height: auto;
+            }
+        }
+
+        .iso-date-wrap {
+            position: relative;
+            display: block;
+        }
+
+        .iso-date {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            display: block;
+            font-size: 0.95rem;
+            color: #334;
+            direction: ltr;
+        }
+
+        .iso-date-wrap input[type="date"] {
+            padding-inline-start: 12px;
+            padding-inline-end: 12px;
+        }
+
+        .iso-date-hide-native {
+            color: transparent;
+            text-shadow: none;
+        }
+
+        input[type="date"].iso-date-hide-native::-webkit-datetime-edit,
+        input[type="date"].iso-date-hide-native::-webkit-datetime-edit-text,
+        input[type="date"].iso-date-hide-native::-webkit-datetime-edit-month-field,
+        input[type="date"].iso-date-hide-native::-webkit-datetime-edit-day-field,
+        input[type="date"].iso-date-hide-native::-webkit-datetime-edit-year-field {
+            color: transparent !important;
+            -webkit-text-fill-color: transparent !important;
+            text-shadow: none !important;
+        }
+
+        .form-container,
+        .form-container * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .radio-group label,
+        .check-group label {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        input,
+        select,
+        textarea {
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input[type="checkbox"],
+        input[type="radio"] {
+            -webkit-appearance: auto;
+            appearance: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container" id="app-container">
+        <div id="form-content">
+            <h1>OBS & GYN Patient Report Form</h1>
+            <p class="subtitle">Sohag General Hospital</p>
+
+            <form id="patient-form" novalidate>
+
+                <!-- SECTION 1: Patient Information -->
+                <div class="section">
+                    <div class="section-title">🧾 Patient Information</div>
+                    <div class="form-group"><label class="required">اسم المريضة (Patient Name) <span class="hint">as per National ID</span></label><input type="text" name="patient_name" placeholder="Full name" required>
+                        <div class="error-msg">Required</div>
+                    </div>
+                    <div class="form-group"><label class="required">Age عمر المريضة</label><input type="number" name="age" placeholder="Age" min="0" max="120" required>
+                        <div class="error-msg">Enter 0–120</div>
+                    </div>
+                    <div class="form-group"><label class="required">عنوان المريضة (Patient Address)</label><textarea name="address" rows="2" placeholder="Full address" required></textarea>
+                        <div class="error-msg">Required</div>
+                    </div>
+                    <div class="form-group"><label class="required">date of admission</label><input type="date" name="admission_date" id="admission_date" required>
+                        <div class="error-msg">Select date</div>
+                    </div>
+                    <div class="form-group"><label class="required">رقم التذكرة (ID / Ticket Number)</label><input type="text" name="ticket_id" placeholder="Ticket ID" required>
+                        <div class="error-msg">Required</div>
+                    </div>
+                    <div class="form-group"><label class="required">نوباتجية يوم ال (Day of admission)</label><select name="shift_day" id="shift_day" required><option value="">-- Select day --</option><option value="الجمعة">الجمعة</option><option value="السبت">السبت</option><option value="الاحد">الاحد</option><option value="الاثنين">الاثنين</option><option value="الثلاثاء">الثلاثاء</option><option value="الاربعاء">الاربعاء</option><option value="الخميس">الخميس</option></select>
+                        <div class="error-msg">Required</div>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: Medical and surgical history -->
+                <div class="section">
+                    <div class="section-title">🏥 Medical and surgical history</div>
+                    <div class="form-group">
+                        <label class="required">Medical co-morbidities</label>
+                        <div class="check-group" data-group="comorbidities">
+                            <label><input type="checkbox" name="comorbidities" value="None"> None</label>
+                            <label><input type="checkbox" name="comorbidities" value="Diabetes type 1"> Diabetes type 1</label>
+                            <label><input type="checkbox" name="comorbidities" value="Diabetes TYPE 2"> Diabetes TYPE 2</label>
+                            <label><input type="checkbox" name="comorbidities" value="Asthmatic"> Asthmatic</label>
+                            <label><input type="checkbox" name="comorbidities" value="SLE"> SLE</label>
+                            <label><input type="checkbox" name="comorbidities" value="Rheumatoid arthritis"> Rheumatoid arthritis</label>
+                            <label><input type="checkbox" name="comorbidities" value="Rheumatic heart disease"> Rheumatic heart disease</label>
+                            <label><input type="checkbox" name="comorbidities" value="Ischemic heart disease"> Ischemic heart disease</label>
+                            <label><input type="checkbox" name="comorbidities" value="HyPOTHYROIDISM"> HyPOTHYROIDISM</label>
+                            <label><input type="checkbox" name="comorbidities" value="BLOOD DISEASE"> BLOOD DISEASE</label>
+                            <label><input type="checkbox" name="comorbidities" value="ANAEMIA"> ANAEMIA</label>
+                            <label><input type="checkbox" name="comorbidities" value="THALASSEMIA"> THALASSEMIA</label>
+                            <label><input type="checkbox" name="comorbidities" value="OTHER"> OTHER</label>
+                        </div>
+                        <div class="error-msg">Select at least one</div>
+                    </div>
+                    <div class="form-group"><label class="required">Past medical history</label><textarea name="past_medical" rows="2" required></textarea>
+                        <div class="error-msg">Required</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="required">Previous surgery</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="prev_surgery" value="YES" required> YES</label>
+                            <label><input type="radio" name="prev_surgery" value="NO"> NO</label>
+                        </div>
+                        <div class="error-msg">Select one</div>
+                    </div>
+                    <div class="form-group conditional" id="surgery-type-box"><label class="required">Type of previous surgery</label><input type="text" name="surgery_type" placeholder="Specify surgery">
+                        <div class="error-msg">Required when YES selected</div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: Parity -->
+                <div class="section">
+                    <div class="section-title">👶 Parity</div>
+                    <div class="form-group">
+                        <label class="required">Nullipara or multipara</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="parity_type" value="Nullipara" required> Nullipara</label>
+                            <label><input type="radio" name="parity_type" value="Multipara"> Multipara</label>
+                        </div>
+                        <div class="error-msg">Select one</div>
+                    </div>
+                </div>
+
+                <!-- SECTION 4: If multipara (conditional) -->
+                <div class="section conditional" id="multipara-section">
+                    <div class="section-title">➕ If multipara, then</div>
+                    <div class="form-group"><label class="required">Exact parity <span class="hint">e.g., P0+2</span></label><input type="text" name="exact_parity" placeholder="P0+2">
+                        <div class="error-msg">Required</div>
+                    </div>
+                    <div class="form-group"><label class="required">Number of living children (0–10)</label><input type="number" name="living_children" min="0" max="10" placeholder="0">
+                        <div class="error-msg">0–10</div>
+                    </div>
+                    <div class="form-group"><label class="required">Number of living males (0–10)</label><input type="number" name="living_males" min="0" max="10" placeholder="0">
+                        <div class="error-msg">0–10</div>
+                    </div>
+                    <div class="form-group"><label class="required">Time since last delivery <span class="hint">e.g., 1+11</span></label><input type="text" name="last_delivery_time" placeholder="1+11">
+                        <div class="error-msg">Required</div>
+                    </div>
+                    <div class="form-group"><label class="required">Time since last abortion <span class="hint">e.g., 1+11</span></label><input type="text" name="last_abortion_time" placeholder="1+11">
+                        <div class="error-msg">Required</div>
+                    </div>
+                </div>
+
+                <!-- SECTION 5: Previous C/S (with conditional number of C/S) -->
+                <div class="section">
+                    <div class="section-title">🩺 Previous C/S or not</div>
+                    <div class="form-group">
+                        <label class="required">Previous C/S</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="prev_cs" value="Yes" required> Yes</label>
+                            <label><input type="radio" name="prev_cs" value="No"> No</label>
+                        </div>
+                        <div class="error-msg">Select one</div>
+                    </div>
+                    <div class="form-group conditional" id="cs-number-box"><label class="required">Number of previous C/S</label><input type="number" name="cs_number" min="0" placeholder="0">
+                        <div class="error-msg">Required when previous C/S is Yes</div>
+                    </div>
+                </div>
+
+                <!-- SECTION 6: Vital signs (MEOW) -->
+                <div class="section">
+                    <div class="section-title">🩻 Vital signs (MEOW SCORING)</div>
+                    <div class="form-group"><label class="required">Systolic blood pressure</label><select name="sbp" required><option value="">-- Select --</option><option value="score 0: 101-149">score 0: 101-149</option><option value="score 1: 90-100">score 1: 90-100</option><option value="score 1: 150-159">score 1: 150-159</option><option value="score 2: less than 90">score 2: less than 90</option><option value="score 2: more than 160">score 2: more than 160</option></select></div>
+                    <div class="form-group"><label class="required">Diastolic blood pressure</label><select name="dbp" required><option value="">-- Select --</option><option value="score 0: 50-79">score 0: 50-79</option><option value="score 1: 80-89">score 1: 80-89</option><option value="score 2: less than 50">score 2: less than 50</option><option value="score 2: 90 or more">score 2: 90 or more</option></select></div>
+                    <div class="form-group"><label class="required">Pulse</label><select name="pulse" required><option value="">-- Select --</option><option value="51-89 (score 0)">51-89 (score 0)</option><option value="41-50 (score 1)">41-50 (score 1)</option><option value="90-100 (score 1)">90-100 (score 1)</option><option value="less than 40 (score 2)">less than 40 (score 2)</option><option value="more than 100 (score 2)">more than 100 (score 2)</option></select></div>
+                    <div class="form-group"><label class="required">Temperature</label><select name="temperature" required><option value="">-- Select --</option><option value="36-37.1 (score 0)">36-37.1 (score 0)</option><option value="37.1-37.9 (score 1)">37.1-37.9 (score 1)</option><option value="less than 36 (score 2)">less than 36 (score 2)</option><option value="38 or more (score 2)">38 or more (score 2)</option></select></div>
+                    <div class="form-group"><label class="required">Respiratory rate</label><select name="resp_rate" required><option value="">-- Select --</option><option value="10-20 (score 0)">10-20 (score 0)</option><option value="less than 10 (score 2)">less than 10 (score 2)</option><option value="More than 20 (score 2)">More than 20 (score 2)</option></select></div>
+                    <div class="form-group"><label class="required">Level of consciousness</label><select name="consciousness" required><option value="">-- Select --</option><option value="Alert (score 0)">Alert (score 0)</option><option value="respond only to verbal stimuli (score 1)">respond only to verbal stimuli (score 1)</option><option value="Respond only to painful stimuli (score 2)">Respond only to painful stimuli (score 2)</option></select></div>
+                    <div class="form-group"><label class="required">O2 saturation</label><select name="o2_sat" required><option value="">-- Select --</option><option value="97-100 (score 0)">97-100 (score 0)</option><option value="95-96 (score 1)">95-96 (score 1)</option><option value="less than or equal to 95 (score 2)">less than or equal to 95 (score 2)</option></select></div>
+                    <div class="form-group"><label class="required">Urine output</label><select name="urine_output" required><option value="">-- Select --</option><option value="more than 40 ml/hr (score 0)">more than 40 ml/hr (score 0)</option><option value="20-40 ml/hr (score 1)">20-40 ml/hr (score 1)</option><option value="less than 20 ml/hr (score 2)">less than 20 ml/hr (score 2)</option></select></div>
+                    <div class="form-group"><label class="required">Meow score (MEOW total score)</label><select name="meow_score" required><option value="">-- Select --</option><option value="0-1 (normal)">0-1 (normal)</option><option value="2-3 (abnormal but stable – evaluate within same day)">2-3 (abnormal but stable – evaluate within same day)</option><option value="4-5 (abnormal and unstable – evaluate within 30 min)">4-5 (abnormal and unstable – evaluate within 30 min)</option><option value="more or  = 6 (abnormal and critical – evaluate within 10 min)">more or  = 6 (abnormal and critical – evaluate within 10 min)</option></select></div>
+                </div>
+
+                <!-- SECTION 7: Investigations -->
+                <div class="section">
+                    <div class="section-title">🔬 Investigations</div>
+                    <div class="form-group">
+                        <label class="required">Laboratory investigations done (incl. ABO & D&C biopsy)</label>
+                        <div class="check-group" data-group="lab_tests">
+                            <label><input type="checkbox" name="lab_tests" value="CBC"> CBC</label>
+                            <label><input type="checkbox" name="lab_tests" value="PT.PC.INR"> PT.PC.INR</label>
+                            <label><input type="checkbox" name="lab_tests" value="Urea.creatinine"> Urea.creatinine</label>
+                            <label><input type="checkbox" name="lab_tests" value="SGOT.SGPT"> SGOT.SGPT</label>
+                            <label><input type="checkbox" name="lab_tests" value="Serum bilirubin"> Serum bilirubin</label>
+                            <label><input type="checkbox" name="lab_tests" value="Serum electrolytes K.Na.Ca"> Serum electrolytes K.Na.Ca</label>
+                            <label><input type="checkbox" name="lab_tests" value="Blood group and cross matches"> Blood group and cross matches</label>
+                            <label><input type="checkbox" name="lab_tests" value="Culture(blood.urine.bus etc)"> Culture(blood.urine.bus etc)</label>
+                            <label><input type="checkbox" name="lab_tests" value="Urine analysis"> Urine analysis</label>
+                            <label><input type="checkbox" name="lab_tests" value="Semen analysis"> Semen analysis</label>
+                            <label><input type="checkbox" name="lab_tests" value="Hormonal profile"> Hormonal profile</label>
+                            <label><input type="checkbox" name="lab_tests" value="BHCG"> BHCG</label>
+                            <label><input type="checkbox" name="lab_tests" value="D-dimer"> D-dimer</label>
+                            <label><input type="checkbox" name="lab_tests" value="Blood gases"> Blood gases</label>
+                            <label><input type="checkbox" name="lab_tests" value="other"> other</label>
+                        </div>
+                        <div class="error-msg">Select at least one</div>
+                    </div>
+                    <div class="form-group"><label class="required">Positive laboratory data <span class="hint">(mention positive data or free)</span></label><input type="text" name="positive_lab_data" required></div>
+                    <div class="form-group">
+                        <label class="required">Imaging investigations</label>
+                        <div class="check-group" data-group="imaging">
+                            <label><input type="checkbox" name="imaging" value="ultrasound"> ultrasound</label>
+                            <label><input type="checkbox" name="imaging" value="Doppler"> Doppler</label>
+                            <label><input type="checkbox" name="imaging" value="Biophysical profile"> Biophysical profile</label>
+                            <label><input type="checkbox" name="imaging" value="MRI"> MRI</label>
+                            <label><input type="checkbox" name="imaging" value="3D OR 4D IMAGING"> 3D OR 4D IMAGING</label>
+                            <label><input type="checkbox" name="imaging" value="chest x-ray"> chest x-ray</label>
+                            <label><input type="checkbox" name="imaging" value="Hsg"> Hsg</label>
+                            <label><input type="checkbox" name="imaging" value="CTG"> CTG</label>
+                            <label><input type="checkbox" name="imaging" value="CT"> CT</label>
+                            <label><input type="checkbox" name="imaging" value="Partogram"> Partogram</label>
+                            <label><input type="checkbox" name="imaging" value="other"> other</label>
+                            <label><input type="checkbox" name="imaging" value="None"> None</label>
+                        </div>
+                    </div>
+                    <div class="form-group"><label class="required">Positive imaging data <span class="hint">(mention positive data or free)</span></label><input type="text" name="positive_imaging_data" required></div>
+                </div>
+
+                <!-- SECTION 8: Blood transfusion (with conditional components) -->
+                <div class="section">
+                    <div class="section-title">🩸 Blood transfusion</div>
+                    <div class="form-group"><label class="required">Blood component transfusion</label><select name="blood_transfusion" id="blood_transfusion" required><option value="">-- Select --</option><option value="yes">yes</option><option value="no">no</option></select></div>
+                    <div class="form-group"><label class="required">Blood group <span class="hint">ABO SYSTEM and RH typing</span></label><input type="text" name="blood_group" placeholder="e.g., A+" required></div>
+                    <div class="conditional" id="transfused-components-box">
+                        <div class="form-group"><label class="required">Transfused components</label>
+                            <div class="check-group" data-group="transfused">
+                                <label><input type="checkbox" name="transfused" value="packed RBCS"> packed RBCS</label>
+                                <label><input type="checkbox" name="transfused" value="Plasma"> Plasma</label>
+                                <label><input type="checkbox" name="transfused" value="platelets"> platelets</label>
+                                <label><input type="checkbox" name="transfused" value="cryoprecipitate"> cryoprecipitate</label>
+                                <label><input type="checkbox" name="transfused" value="None"> None</label>
+                            </div>
+                            <div class="error-msg">Select at least one</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 9: Management -->
+                <div class="section">
+                    <div class="section-title">📋 Management</div>
+                    <div class="form-group"><label class="required">Obstetric or Gynecological case</label><select name="case_type" id="case_type" required><option value="">-- Select --</option><option value="Obstetric case">Obstetric case</option><option value="Gynecological case">Gynecological case</option><option value="Complicated case(outside or inside)">Complicated case(outside or inside)</option></select></div>
+                </div>
+
+                <!-- SECTION 10: Obstetric case (conditional) -->
+                <div class="section conditional" id="obstetric-section">
+                    <div class="section-title">🤰 If obstetric case, then</div>
+                    <div class="form-group">
+                        <label class="required">Any pregnancy induced medical conditions</label>
+                        <div class="check-group" data-group="preg_conditions">
+                            <label><input type="checkbox" name="preg_conditions" value="NO"> NO</label>
+                            <label><input type="checkbox" name="preg_conditions" value="pre-eclampsia"> pre-eclampsia</label>
+                            <label><input type="checkbox" name="preg_conditions" value="Eclampsia"> Eclampsia</label>
+                            <label><input type="checkbox" name="preg_conditions" value="HEELP syndrome"> HEELP syndrome</label>
+                            <label><input type="checkbox" name="preg_conditions" value="Gestational hypertension"> Gestational hypertension</label>
+                            <label><input type="checkbox" name="preg_conditions" value="Gestational thrombocytopenia"> Gestational thrombocytopenia</label>
+                            <label><input type="checkbox" name="preg_conditions" value="Gestational diabetes"> Gestational diabetes</label>
+                            <label><input type="checkbox" name="preg_conditions" value="Gestational proteinuria"> Gestational proteinuria</label>
+                            <label><input type="checkbox" name="preg_conditions" value="Acute fatty liver"> Acute fatty liver</label>
+                            <label><input type="checkbox" name="preg_conditions" value="Cholestasis of pregnancy"> Cholestasis of pregnancy</label>
+                            <label><input type="checkbox" name="preg_conditions" value="Hyperemesis of gravidarum"> Hyperemesis of gravidarum</label>
+                            <label><input type="checkbox" name="preg_conditions" value="Pyelonephritis with pregnancy"> Pyelonephritis with pregnancy</label>
+                            <label><input type="checkbox" name="preg_conditions" value="Hypothyroidism"> Hypothyroidism</label>
+                            <label><input type="checkbox" name="preg_conditions" value="Anaemia"> Anaemia</label>
+                            <label><input type="checkbox" name="preg_conditions" value="other"> other</label>
+                        </div>
+                        <div class="error-msg">Select at least one</div>
+                    </div>
+                    <div class="form-group conditional" id="preg-other-box"><label class="required">Mention other pregnancy induced medical conditions</label><input type="text" name="preg_condition_other">
+                        <div class="error-msg">Required when 'other' selected</div>
+                    </div>
+                    <div class="form-group"><label class="required">Gestational age</label><select name="gestational_age" required><option value="">-- Select --</option><option value="More or = 37 weeks">More or = 37 weeks</option><option value="Less than 37 weeks">Less than 37 weeks</option></select></div>
+                    <div class="form-group"><label class="required">Exact gestational age</label><input type="number" name="exact_gestational_age" min="0" required></div>
+                    <div class="form-group"><label class="required">The patient is admitted for</label><select name="admission_reason" id="admission_reason" required><option value="">-- Select --</option><option value="For delivery">For delivery</option><option value="Abortion">Abortion</option><option value="For follow up">For follow up</option><option value="Vesicular mole">Vesicular mole</option><option value="Ectopic pregnancy">Ectopic pregnancy</option></select></div>
+
+                    <!-- Delivery section (includes pregnancy outcome) -->
+                    <div class="conditional" id="delivery-section">
+                        <div class="section-title" style="font-size:16px; margin-top:10px;">🚼 If for delivery, then</div>
+                        <div class="form-group"><label class="required">Onset of labour</label><select name="labour_onset" required><option value="">-- Select --</option><option value="Spontaneous">Spontaneous</option><option value="Induced">Induced</option><option value="Prelabour">Prelabour</option></select></div>
+                        <div class="form-group"><label class="required">Single or multiple pregnancy</label><select name="pregnancy_type" required><option value="">-- Select --</option><option value="Single">Single</option><option value="Multiple">Multiple</option></select></div>
+                        <div class="form-group"><label class="required">Fetal presentation</label><select name="fetal_presentation" required><option value="">-- Select --</option><option value="Cephalic">Cephalic</option><option value="Breech">Breech</option><option value="Transverse or oblique">Transverse or oblique</option><option value="Face">Face</option><option value="Brow">Brow</option><option value="Complex">Complex</option></select></div>
+                        <div class="form-group"><label class="required">Date of delivery</label><input type="date" name="delivery_date" required></div>
+                        <div class="form-group"><label class="required">Mode of delivery</label><select name="delivery_mode" id="delivery_mode" required><option value="">-- Select --</option><option value="Vaginal">Vaginal</option><option value="C/S">C/S</option></select></div>
+                        <div class="conditional" id="cs-indications-box">
+                            <div class="form-group"><label class="required">Indications of C/S</label>
+                                <div class="check-group" data-group="cs_indications">
+                                    <label><input type="checkbox" name="cs_indications" value="CPD"> CPD</label>
+                                    <label><input type="checkbox" name="cs_indications" value="Abnormal presentation"> Abnormal presentation</label>
+                                    <label><input type="checkbox" name="cs_indications" value="Abnormal CTG"> Abnormal CTG</label>
+                                    <label><input type="checkbox" name="cs_indications" value="Abnormal uterine action"> Abnormal uterine action</label>
+                                    <label><input type="checkbox" name="cs_indications" value="Placenta praevia"> Placenta praevia</label>
+                                    <label><input type="checkbox" name="cs_indications" value="Accidental hemorrhage"> Accidental hemorrhage</label>
+                                    <label><input type="checkbox" name="cs_indications" value="Cord prolapse"> Cord prolapse</label>
+                                    <label><input type="checkbox" name="cs_indications" value="Severe PET"> Severe PET</label>
+                                    <label><input type="checkbox" name="cs_indications" value="Eclampsia"> Eclampsia</label>
+                                    <label><input type="checkbox" name="cs_indications" value="HELLP"> HELLP</label>
+                                    <label><input type="checkbox" name="cs_indications" value="Uterine rupture"> Uterine rupture</label>
+                                    <label><input type="checkbox" name="cs_indications" value="Fetal distress"> Fetal distress</label>
+                                    <label><input type="checkbox" name="cs_indications" value="Preterm"> Preterm</label>
+                                    <label><input type="checkbox" name="cs_indications" value="Failure of progress"> Failure of progress</label>
+                                    <label><input type="checkbox" name="cs_indications" value="Precious baby"> Precious baby</label>
+                                    <label><input type="checkbox" name="cs_indications" value="Maternal request"> Maternal request</label>
+                                    <label><input type="checkbox" name="cs_indications" value="Previous C/S"> Previous C/S</label>
+                                    <label><input type="checkbox" name="cs_indications" value="Obstructed labour"> Obstructed labour</label>
+                                </div>
+                                <div class="error-msg">Select at least one</div>
+                            </div>
+                        </div>
+                        <div class="section-title" style="font-size:16px; margin-top:10px;">📝 Pregnancy outcome</div>
+                        <div class="form-group"><label class="required">Male or female fetus <span class="hint">gender of fetus or fettii</span></label><input type="text" name="fetus_gender" required></div>
+                        <div class="form-group"><label class="required">Fetal complications</label>
+                            <div class="check-group" data-group="fetal_complications">
+                                <label><input type="checkbox" name="fetal_complications" value="None"> None</label>
+                                <label><input type="checkbox" name="fetal_complications" value="Fetal asphyxia"> Fetal asphyxia</label>
+                                <label><input type="checkbox" name="fetal_complications" value="NICU admission"> NICU admission</label>
+                                <label><input type="checkbox" name="fetal_complications" value="Neonatal mortality"> Neonatal mortality</label>
+                                <label><input type="checkbox" name="fetal_complications" value="fetal injury"> fetal injury</label>
+                                <label><input type="checkbox" name="fetal_complications" value="stilbirth"> stilbirth</label>
+                                <label><input type="checkbox" name="fetal_complications" value="preterm labour Less than 37 weeks"> preterm labour Less than 37 weeks</label>
+                                <label><input type="checkbox" name="fetal_complications" value="Respiratory distress"> Respiratory distress</label>
+                                <label><input type="checkbox" name="fetal_complications" value="congenital anomalies"> congenital anomalies</label>
+                                <label><input type="checkbox" name="fetal_complications" value="IUFD"> IUFD</label>
+                                <label><input type="checkbox" name="fetal_complications" value="OTHER"> OTHER</label>
+                            </div>
+                        </div>
+                        <div class="form-group"><label class="required">Maternal complications</label>
+                            <div class="check-group" data-group="maternal_complications">
+                                <label><input type="checkbox" name="maternal_complications" value="None"> None</label>
+                                <label><input type="checkbox" name="maternal_complications" value="Intrapatum hge"> Intrapatum hge</label>
+                                <label><input type="checkbox" name="maternal_complications" value="PPH"> PPH</label>
+                                <label><input type="checkbox" name="maternal_complications" value="Bladder injury"> Bladder injury</label>
+                                <label><input type="checkbox" name="maternal_complications" value="Bowel injury"> Bowel injury</label>
+                                <label><input type="checkbox" name="maternal_complications" value="Rupture uterus"> Rupture uterus</label>
+                                <label><input type="checkbox" name="maternal_complications" value="Hystrectomy"> Hystrectomy</label>
+                                <label><input type="checkbox" name="maternal_complications" value="3rd and 4th degree perineal tear"> 3rd and 4th degree perineal tear</label>
+                                <label><input type="checkbox" name="maternal_complications" value="Pulmonary embolism"> Pulmonary embolism</label>
+                                <label><input type="checkbox" name="maternal_complications" value="Maternal mortality"> Maternal mortality</label>
+                                <label><input type="checkbox" name="maternal_complications" value="Haematoma"> Haematoma</label>
+                                <label><input type="checkbox" name="maternal_complications" value="Rupture vagina"> Rupture vagina</label>
+                                <label><input type="checkbox" name="maternal_complications" value="cervical tear"> cervical tear</label>
+                                <label><input type="checkbox" name="maternal_complications" value="Broad ligament haematoma"> Broad ligament haematoma</label>
+                                <label><input type="checkbox" name="maternal_complications" value="anaesthetic complication"> anaesthetic complication</label>
+                                <label><input type="checkbox" name="maternal_complications" value="placenta accreta"> placenta accreta</label>
+                                <label><input type="checkbox" name="maternal_complications" value="abruptio placenta"> abruptio placenta</label>
+                                <label><input type="checkbox" name="maternal_complications" value="other"> other</label>
+                            </div>
+                        </div>
+                        <div class="form-group"><label>Please give a brief report of delivery</label><textarea name="delivery_report" rows="3"></textarea></div>
+                        <div class="form-group"><label class="required">Robson classification</label><select name="robson" required><option value="">-- Select --</option><option value="Group 1(pg-single-cephalic-term-spontaneous labour)">Group 1(pg-single-cephalic-term-spontaneous labour)</option><option value="Group 2a(pg-single-cephalic-term-induced labour)">Group 2a(pg-single-cephalic-term-induced labour)</option><option value="Group 2b(pg-single-cephalic-term-elective or prelabour)">Group 2b(pg-single-cephalic-term-elective or prelabour)</option><option value="Group 3(multi-single-cephalic-term-spontaneous lab without uterine scar)">Group 3(multi-single-cephalic-term-spontaneous lab without uterine scar)</option><option value="Group 4a(multi-single-cephalic-term-induced-without scar)">Group 4a(multi-single-cephalic-term-induced-without scar)</option><option value="Group 4b(multi-single-cephalic-term-elective or prelabour-without scar)">Group 4b(multi-single-cephalic-term-elective or prelabour-without scar)</option><option value="Group 5a(previous one-single-cephalic-term-spontaneous,or elective)">Group 5a(previous one-single-cephalic-term-spontaneous,or elective)</option><option value="Group 5b(previous 2 or more scars-single-cephalic-term-spontaneous or elective)">Group 5b(previous 2 or more scars-single-cephalic-term-spontaneous or elective)</option><option value="Group 6(nullipara-breech-term)">Group 6(nullipara-breech-term)</option><option value="Group 7(multi-breech-term-with or without previous c/s)">Group 7(multi-breech-term-with or without previous c/s)</option><option value="Group 8(twins-nulli or multi-with or without previous c/s)">Group 8(twins-nulli or multi-with or without previous c/s)</option><option value="Group 9(transverse or oblique lie-nulli or multi--with or without c/s)">Group 9(transverse or oblique lie-nulli or multi--with or without c/s)</option><option value="Group 10(preterm-nulli or multi-single-cephalic-with or without c/s)">Group 10(preterm-nulli or multi-single-cephalic-with or without c/s)</option></select></div>
+                        <div class="form-group"><label class="required">Contraceptive method used</label><select name="contraceptive" id="contraceptive" required><option value="">-- Select --</option><option value="None">None</option><option value="IUD">IUD</option><option value="Implanon">Implanon</option><option value="POPs">POPs</option><option value="COCs">COCs</option></select></div>
+                        <div class="form-group conditional" id="refusal-reason-box"><label class="required">Cause of refusal of contraceptive method</label><input type="text" name="contraceptive_refusal_reason">
+                            <div class="error-msg">Required when contraception method is NONE</div>
+                        </div>
+                    </div>
+
+                    <!-- Abortion section -->
+                    <div class="conditional" id="abortion-section">
+                        <div class="section-title" style="font-size:16px; margin-top:10px;">🩹 Abortion Case</div>
+                        <div class="form-group"><label class="required">Type of Abortion</label><select name="abortion_type" required><option value="">-- Select --</option><option value="Threatened">Threatened</option><option value="Inevitable">Inevitable</option><option value="Incomplete">Incomplete</option><option value="Missed">Missed</option><option value="Septic">Septic</option></select></div>
+                        <div class="form-group"><label class="required">Intervention</label><select name="abortion_intervention" required><option value="">-- Select --</option><option value="E&C">E&C</option><option value="Intrauterine catheter">Intrauterine catheter</option><option value="D&C">D&C</option><option value="Follow up">Follow up</option></select></div>
+                        <div class="form-group"><label class="required">Intervention Details</label><textarea name="abortion_intervention_details" rows="2" required></textarea></div>
+                        <div class="form-group"><label class="required">Treatment Prescribed</label><textarea name="abortion_treatment" rows="2" required></textarea></div>
+                        <div class="form-group"><label class="required">Contraceptive Method</label><select name="abortion_contraceptive" required><option value="">-- Select --</option><option value="None">None</option><option value="IUD">IUD</option><option value="Implanon">Implanon</option><option value="POPs">POPs</option><option value="COCs">COCs</option></select></div>
+                    </div>
+
+                    <!-- Vesicular mole section -->
+                    <div class="conditional" id="vesicular-section">
+                        <div class="section-title" style="font-size:16px; margin-top:10px;">🔬 Vesicular Mole</div>
+                        <div class="form-group"><label class="required">Gestational Age (by LMP)</label><input type="text" name="vesicular_ga_lmp" placeholder="e.g., 10 weeks" required></div>
+                        <div class="form-group"><label class="required">Partial or Complete</label><select name="vesicular_type" required><option value="">-- Select --</option><option value="Partial">Partial</option><option value="Complete">Complete</option></select></div>
+                        <div class="form-group"><label class="required">Intervention</label><select name="vesicular_intervention" required><option value="">-- Select --</option><option value="Suction evacuation">Suction evacuation</option><option value="Follow up">Follow up</option><option value="Methotrexate">Methotrexate</option><option value="Mixed">Mixed</option><option value="Other">Other</option></select></div>
+                        <div class="form-group"><label class="required">Medications Prescribed</label><textarea name="vesicular_medications" rows="2" required></textarea></div>
+                        <div class="form-group"><label class="required">Contraceptive Method</label><select name="vesicular_contraceptive" required><option value="">-- Select --</option><option value="None">None</option><option value="IUD">IUD</option><option value="Implanon">Implanon</option><option value="POPs">POPs</option><option value="COCs">COCs</option></select></div>
+                    </div>
+
+                    <!-- Ectopic pregnancy section -->
+                    <div class="conditional" id="ectopic-section">
+                        <div class="section-title" style="font-size:16px; margin-top:10px;">❗ Ectopic Pregnancy</div>
+                        <div class="form-group"><label class="required">Type of Ectopic</label><select name="ectopic_type" required><option value="">-- Select --</option><option value="Tubal">Tubal</option><option value="Scar">Scar</option><option value="Ovarian">Ovarian</option><option value="Cervical">Cervical</option><option value="Abdominal">Abdominal</option><option value="Other">Other</option></select></div>
+                        <div class="form-group"><label class="required">Disturbed or Not</label><select name="ectopic_disturbed" required><option value="">-- Select --</option><option value="Disturbed">Disturbed</option><option value="Undisturbed">Undisturbed</option></select></div>
+                        <div class="form-group"><label class="required">Intervention (select all that apply)</label>
+                            <div class="check-group" data-group="ectopic_intervention">
+                                <label><input type="checkbox" name="ectopic_intervention" value="Surgical"> Surgical</label>
+                                <label><input type="checkbox" name="ectopic_intervention" value="Laparoscopy"> Laparoscopy</label>
+                                <label><input type="checkbox" name="ectopic_intervention" value="Methotrexate"> Methotrexate</label>
+                                <label><input type="checkbox" name="ectopic_intervention" value="Follow up"> Follow up</label>
+                            </div>
+                            <div class="error-msg">Select at least one</div>
+                        </div>
+                        <div class="form-group"><label class="required">Brief of Intervention</label><textarea name="ectopic_intervention_brief" rows="2" required></textarea></div>
+                        <div class="form-group"><label class="required">Contraceptive Method</label><select name="ectopic_contraceptive" required><option value="">-- Select --</option><option value="None">None</option><option value="IUD">IUD</option><option value="Implanon">Implanon</option><option value="POPs">POPs</option><option value="COCs">COCs</option></select></div>
+                    </div>
+
+                    <!-- Follow-up section -->
+                    <div class="conditional" id="followup-section">
+                        <div class="section-title" style="font-size:16px; margin-top:10px;">📅 Follow‑Up Case</div>
+                        <div class="form-group"><label class="required">Indication of Admission</label><textarea name="followup_indication" rows="2" required></textarea></div>
+                        <div class="form-group"><label class="required">Treatment Prescribed</label><textarea name="followup_treatment" rows="2" required></textarea></div>
+                    </div>
+                </div>
+
+                <!-- Gynecological Case Section -->
+                <div class="section conditional" id="gynecological-section">
+                    <div class="section-title">👩‍⚕️ Gynecological Case</div>
+                    <div class="form-group"><label class="required">Diagnosis</label><select name="gyn_diagnosis" required><option value="">-- Select --</option><option value="Postmenopausal bleeding">Postmenopausal bleeding</option><option value="Perimenopausal bleeding">Perimenopausal bleeding</option><option value="DUB">DUB</option><option value="Adenomyosis">Adenomyosis</option><option value="Fibroid uterus">Fibroid uterus</option><option value="Ovarian cyst">Ovarian cyst</option><option value="Ovarian mass">Ovarian mass</option><option value="Cystorectocele">Cystorectocele</option><option value="Rectocele">Rectocele</option><option value="Uterine descent (2nd/3rd degree)">Uterine descent (2nd/3rd degree)</option><option value="Bartholin cyst/abscess">Bartholin cyst/abscess</option><option value="Labia mass cyst or abscess">Labia mass cyst or abscess</option><option value="Imperforate hymen">Imperforate hymen</option><option value="Old complete perineal tear">Old complete perineal tear</option><option value="Incomplete perineal tear">Incomplete perineal tear</option><option value="Primary infertility">Primary infertility</option><option value="Secondary infertility">Secondary infertility</option><option value="Defloration injury">Defloration injury</option><option value="Other">Other</option></select></div>
+                    <div class="form-group"><label class="required">Intervention Done</label><select name="gyn_intervention" required><option value="">-- Select --</option><option value="TAH">TAH</option><option value="Myomectomy">Myomectomy</option><option value="Classical repair">Classical repair</option><option value="Vaginal hysterectomy">Vaginal hysterectomy</option><option value="Ovarian cystectomy">Ovarian cystectomy</option><option value="Posterior colpoperineorrhaphy">Posterior colpoperineorrhaphy</option><option value="Perineal tear repair">Perineal tear repair</option><option value="Hymenotomy">Hymenotomy</option><option value="D&C">D&C</option><option value="Evacuation & curettage">Evacuation & curettage</option><option value="Diagnostic laparoscopy">Diagnostic laparoscopy</option><option value="Diagnostic hysteroscopy">Diagnostic hysteroscopy</option><option value="Hysterotomy">Hysterotomy</option><option value="Posterior sacrocolpopexy">Posterior sacrocolpopexy</option><option value="Bartholin abscess/cyst surgery">Bartholin abscess/cyst surgery</option><option value="Subtotal AH">Subtotal AH</option><option value="Sling operation">Sling operation</option><option value="Adnexectomy">Adnexectomy</option><option value="Bladder/bowel repair">Bladder/bowel repair</option><option value="Resection anastomosis">Resection anastomosis</option><option value="Secondary suture">Secondary suture</option><option value="Drainage of pelvic abscess">Drainage of pelvic abscess</option></select></div>
+                    <div class="form-group"><label class="required">Date of Operation</label><input type="date" name="gyn_op_date" required></div>
+                    <div class="form-group"><label class="required">Complications of Operation</label><textarea name="gyn_complications" rows="2" required></textarea></div>
+                    <div class="form-group"><label class="required">Brief Report of Operation</label><textarea name="gyn_report" rows="2" required></textarea></div>
+                    <div class="form-group"><label class="required">Treatment After Operation</label><textarea name="gyn_treatment" rows="2" required></textarea></div>
+                </div>
+
+                <!-- Complicated Case Section -->
+                <div class="section conditional" id="complicated-section">
+                    <div class="section-title">⚠️ Complicated Case</div>
+                    <div class="form-group"><label class="required">Complicated Outside or Inside</label>
+                        <div class="check-group" data-group="complicated_location">
+                            <label><input type="checkbox" name="complicated_location" value="Outside hospital"> Outside hospital</label>
+                            <label><input type="checkbox" name="complicated_location" value="Inside hospital"> Inside hospital</label>
+                            <label><input type="checkbox" name="complicated_location" value="Illegal pregnancy"> Illegal pregnancy</label>
+                        </div>
+                        <div class="error-msg">Select at least one</div>
+                    </div>
+                    <div class="form-group"><label class="required">Presentation of Complication</label><textarea name="complicated_presentation" rows="2" required></textarea></div>
+                    <div class="form-group"><label class="required">Intervention Done</label><textarea name="complicated_intervention_done" rows="2" required></textarea></div>
+                    <div class="form-group"><label class="required">Intervention to be Done</label><textarea name="complicated_intervention_todo" rows="2" required></textarea></div>
+                    <div class="form-group"><label class="required">Treatment After Interventions</label><textarea name="complicated_treatment" rows="2" required placeholder="Including referral to ICU"></textarea></div>
+                    <div class="form-group"><label class="required">Medical Report (Arabic)</label><textarea name="complicated_medical_report" rows="2" required placeholder="Surgical/gynecology report number and date"></textarea></div>
+                </div>
+
+                <!-- SECTION 12: SURGEONS (custom autocomplete) -->
+                <div class="section">
+                    <div class="section-title">👨‍⚕️ SURGEONS</div>
+                    <div class="form-group">
+                        <label class="required">الاستشاري / رئيس المجموعة</label>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" name="consultant" class="doctors-input ac-input" required>
+                            <div class="autocomplete-dropdown"></div>
+                        </div>
+                        <div class="error-msg">Please select a name from the list</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="required">أخصائي / أخصائي مساعد</label>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" name="specialist" class="doctors-input ac-input" required>
+                            <div class="autocomplete-dropdown"></div>
+                        </div>
+                        <div class="error-msg">Please select a name from the list</div>
+                    </div>
+                    <div class="form-group">
+                        <label>أخصائي / أخصائي مساعد (2) <span class="hint">optional</span></label>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" name="specialist" class="doctors-input ac-input">
+                            <div class="autocomplete-dropdown"></div>
+                        </div>
+                        <div class="error-msg">If entered, must be from the list</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="required">طبيب مقيم</label>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" name="residents" class="doctors-input ac-input" required>
+                            <div class="autocomplete-dropdown"></div>
+                        </div>
+                        <div class="error-msg">Please select a name from the list</div>
+                    </div>
+                    <div class="form-group">
+                        <label>طبيب مقيم (2) <span class="hint">optional</span></label>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" name="residents" class="doctors-input ac-input">
+                            <div class="autocomplete-dropdown"></div>
+                        </div>
+                        <div class="error-msg">If entered, must be from the list</div>
+                    </div>
+                    <div class="form-group"><label class="required">الممرضة <span class="hint">ممرضة العمليات-الكشك او القسم المسئوله</span></label><input type="text" name="scrub_nurse" required></div>
+                    <div class="form-group"><label class="required">نوع العلاج</label><select name="treatment_type" required><option value="">-- Select --</option><option value="طوارئ">طوارئ</option><option value="مجانى(تكافل وكرامة-بحث اجتماعى-----الخ)">مجانى(تكافل وكرامة-بحث اجتماعى-----الخ)</option><option value="علاج بأجر">علاج بأجر</option><option value="تأمين صحي">تأمين صحي</option><option value="نفقة">نفقة</option></select></div>
+                    <div class="form-group">
+                        <label class="required">القائم بإدخال البيانات</label>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" name="entered_by" class="doctors-input ac-input" required>
+                            <div class="autocomplete-dropdown"></div>
+                        </div>
+                        <div class="error-msg">Please select a name from the list</div>
+                    </div>
+                </div>
+
+                <div id="submit-status" style="display:none; margin-bottom:12px; color:#1a3c5e; font-weight:600;">جار إرسال البيانات</div>
+                <button type="submit" id="submit-button">Submit Report</button>
+            </form>
+
+        </div>
+        <div class="thank-you" id="thank-you"><h2>✅ Data Submitted Successfully</h2><p>The patient data has been recorded.</p><button type="button" onclick="location.reload()">Submit Another Report</button></div>
+        <footer style="text-align:center; margin-top:12px;">وفقنا الله وإياكم</footer>
+    </div>
+
+    <script>
+        (function() {
+            let doctorNames = [];
+
+            // --- CSV parser ---
+            function parseCSV(text) {
+                const rows = [];
+                let currentRow = [],
+                    currentField = '';
+                let inQuotes = false;
+                for (let i = 0; i < text.length; i++) {
+                    const char = text[i],
+                        nextChar = text[i + 1];
+                    if (inQuotes) {
+                        if (char === '"') {
+                            if (nextChar === '"') { currentField += '"';
+                                i++; } else inQuotes = false;
+                        } else currentField += char;
+                    } else {
+                        if (char === '"') inQuotes = true;
+                        else if (char === ',') { currentRow.push(currentField);
+                            currentField = ''; } else if (char === '\n') { currentRow.push(currentField);
+                            rows.push(currentRow);
+                            currentRow = [];
+                            currentField = ''; } else if (char === '\r') { if (nextChar === '\n') i++;
+                            currentRow.push(currentField);
+                            rows.push(currentRow);
+                            currentRow = [];
+                            currentField = ''; } else currentField += char;
+                    }
+                }
+                if (currentField !== '' || currentRow.length > 0) { currentRow.push(currentField);
+                    rows.push(currentRow); }
+                return rows;
+            }
+
+            // --- Load doctor names (column A only) ---
+            const DOCTORS_CSV_URL =
+                "https://docs.google.com/spreadsheets/d/e/2PACX-1vRDOEhW9VetivLm_3iGJgLJ9i86v0tcQcFpHw7TQBjZkWqr0TPM1npBklwEaHac_3LMZePMvOgNzCLF/pub?output=csv";
+
+            async function loadDoctorsList() {
+                try {
+                    const resp = await fetch(DOCTORS_CSV_URL);
+                    const text = await resp.text();
+                    const rows = parseCSV(text);
+                    const names = [];
+                    for (let i = 1; i < rows.length; i++) {
+                        const firstCol = (rows[i][0] || '').trim();
+                        if (firstCol) names.push(firstCol);
+                    }
+                    doctorNames = [...new Set(names)];
+                } catch (err) { console.warn('Could not load doctors list:', err); }
+            }
+
+            // --- Custom autocomplete (word‑by‑word, starts‑with) ---
+            function initAutocomplete(input) {
+                const wrapper = input.parentElement;
+                const dropdown = wrapper.querySelector('.autocomplete-dropdown');
+                let activeIndex = -1;
+
+                function filterSuggestions(value) {
+                    const tokens = value.trim().split(/\s+/);
+                    if (tokens.length === 0 || (tokens.length === 1 && tokens[0] === '')) return [];
+                    return doctorNames.filter(name => {
+                        const nameWords = name.split(/\s+/);
+                        for (let i = 0; i < tokens.length; i++) {
+                            const token = tokens[i].toLowerCase();
+                            if (i >= nameWords.length) return false;
+                            if (!nameWords[i].toLowerCase().startsWith(token)) return false;
+                        }
+                        return true;
+                    });
+                }
+
+                function showDropdown(suggestions) {
+                    dropdown.innerHTML = '';
+                    if (suggestions.length === 0) { dropdown.style.display = 'none'; return; }
+                    suggestions.forEach(name => {
+                        const div = document.createElement('div');
+                        div.className = 'item';
+                        div.textContent = name;
+                        div.addEventListener('pointerdown', (e) => {
+                            e.preventDefault();
+                            input.value = name;
+                            dropdown.style.display = 'none';
+                            activeIndex = -1;
+                            input.dispatchEvent(new Event('input', { bubbles: true }));
+                        });
+                        dropdown.appendChild(div);
+                    });
+                    dropdown.style.display = 'block';
+                    activeIndex = -1;
+                }
+
+                input.addEventListener('input', () => {
+                    const suggestions = filterSuggestions(input.value);
+                    showDropdown(suggestions);
+                });
+
+                input.addEventListener('keydown', (e) => {
+                    const items = dropdown.querySelectorAll('.item');
+                    if (items.length === 0) return;
+                    if (e.key === 'ArrowDown') { e.preventDefault();
+                        activeIndex = Math.min(activeIndex + 1, items.length - 1);
+                        updateActive(items); } else if (e.key === 'ArrowUp') { e.preventDefault();
+                        activeIndex = Math.max(activeIndex - 1, -1);
+                        updateActive(items); } else if (e.key === 'Enter') {
+                        if (activeIndex >= 0) { e.preventDefault();
+                            input.value = items[activeIndex].textContent;
+                            dropdown.style.display = 'none';
+                            activeIndex = -1;
+                            input.dispatchEvent(new Event('input', { bubbles: true })); }
+                    } else if (e.key === 'Escape') { dropdown.style.display = 'none';
+                        activeIndex = -1; }
+                });
+
+                function updateActive(items) { items.forEach((item, i) => item.classList.toggle('active', i === activeIndex)); }
+
+                document.addEventListener('click', (e) => {
+                    if (!wrapper.contains(e.target)) { dropdown.style.display = 'none';
+                        activeIndex = -1; }
+                });
+            }
+
+            loadDoctorsList().then(() => {
+                document.querySelectorAll('.ac-input').forEach(input => initAutocomplete(input));
+            });
+
+            // --- Default dates & day ---
+            (function() {
+                const today = new Date();
+                const dateStr = today.toISOString().split('T')[0];
+                const admissionInput = document.getElementById('admission_date');
+                if (admissionInput && !admissionInput.value) admissionInput.value = dateStr;
+                const dayMap = ["الاحد", "الاثنين", "الثلاثاء", "الاربعاء", "الخميس", "الجمعة", "السبت"];
+                const daySelect = document.getElementById('shift_day');
+                if (daySelect && !daySelect.value) daySelect.value = dayMap[today.getDay()];
+            })();
+
+            // Format a date-like value into "yyyy Month dd"
+            function formatIsoToYMonthD(v) {
+                if (!v) return '';
+                var d = new Date(v);
+                if (isNaN(d.getTime())) return v;
+                var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September',
+                    'October', 'November', 'December'
+                ];
+                return d.getFullYear() + ' ' + months[d.getMonth()] + ' ' + String(d.getDate()).padStart(2, '0');
+            }
+
+            // Ensure visible human-readable date overlay for date inputs.
+            function attachIsoDateDisplays(root) {
+                (root || document).querySelectorAll('input[type="date"]').forEach(function(el) {
+                    if (el.dataset.isoAttached) return;
+                    el.dataset.isoAttached = '1';
+
+                    var wrap = document.createElement('div');
+                    wrap.className = 'iso-date-wrap';
+                    wrap.style.display = getComputedStyle(el).display === 'block' ? 'block' : 'inline-block';
+                    el.parentNode.insertBefore(wrap, el);
+                    wrap.appendChild(el);
+
+                    var span = document.createElement('span');
+                    span.className = 'iso-date';
+                    wrap.appendChild(span);
+
+                    var update = function() { span.textContent = el.value ? formatIsoToYMonthD(el.value) : ''; };
+                    el.classList.add('iso-date-hide-native');
+                    el.addEventListener('input', update);
+                    el.addEventListener('change', update);
+                    el.addEventListener('blur', update);
+                    wrap.addEventListener('pointerdown', function(e) {
+                        if (e.target === wrap || e.target === span) {
+                            try { el.showPicker && el.showPicker();
+                                el.focus(); } catch (ex) { el.focus(); }
+                        }
+                    });
+                    update();
+                });
+            }
+            document.addEventListener('DOMContentLoaded', function() { attachIsoDateDisplays(); });
+
+            // --- Conditional logic ---
+            function setConditional(triggerSelector, conditionValue, targetBox, fieldSelector) {
+                const trigger = document.querySelector(triggerSelector);
+                if (!trigger) return;
+                const update = () => {
+                    let show = false;
+                    if (trigger.tagName === 'SELECT') show = (trigger.value === conditionValue);
+                    else {
+                        const checked = document.querySelector(triggerSelector + ':checked');
+                        show = (checked && checked.value === conditionValue);
+                    }
+                    if (show) {
+                        targetBox.classList.add('visible');
+                        if (fieldSelector) {
+                            targetBox.querySelectorAll(fieldSelector).forEach(f => f.setAttribute('required', ''));
+                        }
+                    } else {
+                        targetBox.classList.remove('visible');
+                        if (fieldSelector) {
+                            targetBox.querySelectorAll(fieldSelector).forEach(f => {
+                                f.removeAttribute('required');
+                                if (f.type !== 'radio' && f.type !== 'checkbox') f.value = '';
+                            });
+                        }
+                        targetBox.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none');
+                        targetBox.querySelectorAll('input, select, textarea').forEach(e => e.style.borderColor =
+                            '#cfdde9');
+                    }
+                };
+                if (trigger.tagName === 'SELECT') trigger.addEventListener('change', update);
+                else document.querySelectorAll(triggerSelector).forEach(r => r.addEventListener('change', update));
+                update();
+            }
+
+            setConditional('input[name="prev_surgery"]', 'YES', document.getElementById('surgery-type-box'), 'input');
+            setConditional('input[name="parity_type"]', 'Multipara', document.getElementById('multipara-section'),
+            'input, select, textarea');
+            setConditional('input[name="prev_cs"]', 'Yes', document.getElementById('cs-number-box'), 'input');
+            setConditional('#blood_transfusion', 'yes', document.getElementById('transfused-components-box'),
+            'input[type="checkbox"]');
+            setConditional('#contraceptive', 'None', document.getElementById('refusal-reason-box'), 'input');
+
+            const deliveryModeSelect = document.getElementById('delivery_mode');
+            const csIndicationsBox = document.getElementById('cs-indications-box');
+            if (deliveryModeSelect && csIndicationsBox) {
+                const toggleCSIndications = () => {
+                    if (deliveryModeSelect.value === 'C/S') {
+                        csIndicationsBox.classList.add('visible');
+                        csIndicationsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.setAttribute(
+                        'required', ''));
+                    } else {
+                        csIndicationsBox.classList.remove('visible');
+                        csIndicationsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                            cb.removeAttribute('required');
+                            cb.checked = false;
+                        });
+                        csIndicationsBox.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none');
+                    }
+                };
+                deliveryModeSelect.addEventListener('change', toggleCSIndications);
+                toggleCSIndications();
+            }
+
+            const caseTypeSelect = document.getElementById('case_type');
+            const obstetricSection = document.getElementById('obstetric-section');
+            const gynecologicalSection = document.getElementById('gynecological-section');
+            const complicatedSection = document.getElementById('complicated-section');
+            const admissionReasonSelect = document.getElementById('admission_reason');
+            const deliverySection = document.getElementById('delivery-section');
+            const abortionSection = document.getElementById('abortion-section');
+            const vesicularSection = document.getElementById('vesicular-section');
+            const ectopicSection = document.getElementById('ectopic-section');
+            const followupSection = document.getElementById('followup-section');
+
+            function toggleCaseSections() {
+                const caseVal = caseTypeSelect.value;
+                if (caseVal === 'Obstetric case') {
+                    obstetricSection.classList.add('visible');
+                    obstetricSection.querySelectorAll('input, select, textarea').forEach(el => {
+                        if (!el.closest('#delivery-section') && !el.closest('#abortion-section') && !el
+                            .closest('#vesicular-section') && !el.closest('#ectopic-section') && !el
+                            .closest('#followup-section')) el.setAttribute('required', '');
+                    });
+                    toggleAdmissionReasonSections();
+                } else { obstetricSection.classList.remove('visible');
+                    clearAllSubSections(obstetricSection); }
+                if (caseVal === 'Gynecological case') {
+                    gynecologicalSection.classList.add('visible');
+                    gynecologicalSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute(
+                    'required', ''));
+                } else {
+                    gynecologicalSection.classList.remove('visible');
+                    gynecologicalSection.querySelectorAll('input, select, textarea').forEach(el => {
+                        el.removeAttribute('required');
+                        if (el.type !== 'radio' && el.type !== 'checkbox') el.value = '';
+                    });
+                }
+                if (caseVal === 'Complicated case(outside or inside)') {
+                    complicatedSection.classList.add('visible');
+                    complicatedSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute(
+                    'required', ''));
+                } else {
+                    complicatedSection.classList.remove('visible');
+                    complicatedSection.querySelectorAll('input, select, textarea').forEach(el => {
+                        el.removeAttribute('required');
+                        if (el.type !== 'radio' && el.type !== 'checkbox') el.value = '';
+                    });
+                }
+            }
+
+            function clearAllSubSections(section) {
+                [deliverySection, abortionSection, vesicularSection, ectopicSection, followupSection].forEach(sec => {
+                    sec.classList.remove('visible');
+                    sec.querySelectorAll('input, select, textarea').forEach(el => {
+                        el.removeAttribute('required');
+                        if (el.type !== 'radio' && el.type !== 'checkbox') el.value = '';
+                    });
+                });
+            }
+
+            function toggleAdmissionReasonSections() {
+                const reason = admissionReasonSelect.value;
+                clearAllSubSections(obstetricSection);
+                if (reason === 'For delivery') {
+                    deliverySection.classList.add('visible');
+                    deliverySection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute(
+                    'required', ''));
+                    const dm = document.getElementById('delivery_mode');
+                    if (dm) dm.dispatchEvent(new Event('change'));
+                } else if (reason === 'Abortion') {
+                    abortionSection.classList.add('visible');
+                    abortionSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute(
+                    'required', ''));
+                } else if (reason === 'Vesicular mole') {
+                    vesicularSection.classList.add('visible');
+                    vesicularSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute(
+                    'required', ''));
+                } else if (reason === 'Ectopic pregnancy') {
+                    ectopicSection.classList.add('visible');
+                    ectopicSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute(
+                    'required', ''));
+                } else if (reason === 'For follow up') {
+                    followupSection.classList.add('visible');
+                    followupSection.querySelectorAll('input, select, textarea').forEach(el => el.setAttribute(
+                    'required', ''));
+                }
+            }
+            caseTypeSelect.addEventListener('change', toggleCaseSections);
+            admissionReasonSelect.addEventListener('change', toggleAdmissionReasonSections);
+            toggleCaseSections();
+
+            // --- Exclusive "None" logic ---
+            function addNoneExclusive(groupSelector, noneValue) {
+                const group = document.querySelector(groupSelector);
+                if (!group) return;
+                group.addEventListener('change', (e) => {
+                    const clicked = e.target;
+                    const checkboxes = group.querySelectorAll('input[type="checkbox"]');
+                    if (clicked.value === noneValue) {
+                        if (clicked.checked) checkboxes.forEach(cb => { if (cb !== clicked) cb.checked = false; });
+                    } else {
+                        if (clicked.checked) {
+                            const noneCb = group.querySelector(`input[value="${noneValue}"]`);
+                            if (noneCb) noneCb.checked = false;
+                        }
+                    }
+                });
+            }
+            addNoneExclusive('[data-group="comorbidities"]', 'None');
+            addNoneExclusive('[data-group="preg_conditions"]', 'NO');
+            addNoneExclusive('[data-group="fetal_complications"]', 'None');
+            addNoneExclusive('[data-group="maternal_complications"]', 'None');
+
+            // "other" field for pregnancy conditions
+            const pregConditionsGroup = document.querySelector('[data-group="preg_conditions"]');
+            if (pregConditionsGroup) {
+                pregConditionsGroup.addEventListener('change', () => {
+                    const otherCb = pregConditionsGroup.querySelector('input[value="other"]');
+                    const otherBox = document.getElementById('preg-other-box');
+                    if (otherCb && otherBox) {
+                        if (otherCb.checked) {
+                            otherBox.classList.add('visible');
+                            otherBox.querySelector('input').setAttribute('required', '');
+                        } else {
+                            otherBox.classList.remove('visible');
+                            otherBox.querySelector('input').removeAttribute('required');
+                            otherBox.querySelector('input').value = '';
+                            otherBox.querySelector('.error-msg').style.display = 'none';
+                        }
+                    }
+                });
+            }
+
+            // --- Column map ---
+            const COLUMN_MAP = [
+                { col: "B", field: "patient_name" }, { col: "C", field: "age" }, { col: "D", field: "address" },
+                { col: "E", field: "admission_date" }, { col: "F", field: "ticket_id" }, { col: "G",
+                    field: "shift_day" },
+                { col: "H", field: "comorbidities" }, { col: "I", field: "past_medical" }, { col: "J",
+                    field: "prev_surgery" },
+                { col: "K", field: "surgery_type" }, { col: "L", field: "parity_type" }, { col: "M",
+                    field: "exact_parity" },
+                { col: "N", field: "living_children" }, { col: "O", field: "living_males" }, { col: "P",
+                    field: "last_delivery_time" },
+                { col: "Q", field: "last_abortion_time" }, { col: "R", field: "prev_cs" }, { col: "S",
+                    field: "cs_number" },
+                { col: "T", field: "sbp" }, { col: "U", field: "dbp" }, { col: "V", field: "pulse" },
+                { col: "W", field: "temperature" }, { col: "X", field: "resp_rate" }, { col: "Y",
+                    field: "consciousness" },
+                { col: "Z", field: "o2_sat" }, { col: "AA", field: "urine_output" }, { col: "AB",
+                    field: "meow_score" },
+                { col: "AC", field: "lab_tests" }, { col: "AD", field: "positive_lab_data" }, { col: "AE",
+                    field: "imaging" },
+                { col: "AF", field: "positive_imaging_data" }, { col: "AG", field: "blood_transfusion" },
+                { col: "AH", field: "blood_group" }, { col: "AI", field: "transfused" }, { col: "AJ",
+                    field: "case_type" },
+                { col: "AK", field: "preg_conditions" }, { col: "AL", field: "preg_condition_other" },
+                { col: "AM", field: "gestational_age" }, { col: "AN", field: "exact_gestational_age" },
+                { col: "AO", field: "admission_reason" }, { col: "AP", field: "labour_onset" },
+                { col: "AQ", field: "pregnancy_type" }, { col: "AR", field: "fetal_presentation" },
+                { col: "AS", field: "delivery_date" }, { col: "AT", field: "delivery_mode" },
+                { col: "AU", field: "cs_indications" }, { col: "AV", field: "fetus_gender" },
+                { col: "AW", field: "fetal_complications" }, { col: "AX", field: "maternal_complications" },
+                { col: "AY", field: "delivery_report" }, { col: "AZ", field: "robson" },
+                { col: "BA", field: "contraceptive" }, { col: "BB", field: "contraceptive_refusal_reason" },
+                { col: "BC", field: "abortion_type" }, { col: "BD", field: "abortion_intervention" },
+                { col: "BE", field: "abortion_intervention_details" }, { col: "BF", field: "abortion_treatment" },
+                { col: "BG", field: "abortion_contraceptive" }, { col: "BH", field: "vesicular_ga_lmp" },
+                { col: "BI", field: "vesicular_type" }, { col: "BJ", field: "vesicular_intervention" },
+                { col: "BK", field: "vesicular_medications" }, { col: "BL", field: "vesicular_contraceptive" },
+                { col: "BM", field: "ectopic_type" }, { col: "BN", field: "ectopic_disturbed" },
+                { col: "BO", field: "ectopic_intervention" }, { col: "BP", field: "ectopic_intervention_brief" },
+                { col: "BQ", field: "ectopic_contraceptive" }, { col: "BR", field: "followup_indication" },
+                { col: "BS", field: "followup_treatment" }, { col: "BT", field: "gyn_diagnosis" },
+                { col: "BU", field: "gyn_intervention" }, { col: "BV", field: "gyn_op_date" },
+                { col: "BW", field: "gyn_complications" }, { col: "BX", field: "gyn_report" },
+                { col: "BY", field: "gyn_treatment" }, { col: "BZ", field: "complicated_location" },
+                { col: "CA", field: "complicated_presentation" }, { col: "CB",
+                    field: "complicated_intervention_done" },
+                { col: "CC", field: "complicated_intervention_todo" }, { col: "CD",
+                    field: "complicated_treatment" },
+                { col: "CE", field: "complicated_medical_report" }, { col: "CF", field: "consultant" },
+                { col: "CG", field: "specialist" }, { col: "CH", field: "residents" },
+                { col: "CI", field: "scrub_nurse" }, { col: "CJ", field: "treatment_type" },
+                { col: "CK", field: "entered_by" }
+            ];
+
+            function buildFormData() {
+                const form = document.getElementById('patient-form');
+                const fd = new FormData();
+                const checkboxGroups = new Set([
+                    "comorbidities", "lab_tests", "imaging", "transfused",
+                    "fetal_complications", "maternal_complications", "ectopic_intervention",
+                    "complicated_location", "preg_conditions", "cs_indications"
+                ]);
+                const radioFields = new Set(["prev_surgery", "parity_type", "prev_cs"]);
+                const multiInputFields = new Set(["specialist", "residents"]);
+
+                COLUMN_MAP.forEach(item => {
+                    const name = item.field;
+                    let value = "";
+                    if (checkboxGroups.has(name)) {
+                        const checked = form.querySelectorAll(`input[name="${name}"]:checked`);
+                        if (checked.length > 0) { const vals = [];
+                            checked.forEach(cb => vals.push(cb.value));
+                            value = vals.join('\n'); }
+                    } else if (radioFields.has(name)) {
+                        const checkedRadio = form.querySelector(`input[name="${name}"]:checked`);
+                        value = checkedRadio ? checkedRadio.value : "";
+                    } else if (multiInputFields.has(name)) {
+                        const inputs = form.querySelectorAll(`input[name="${name}"]`);
+                        const nonEmpty = [];
+                        inputs.forEach(inp => { if (inp.value.trim() !== '') nonEmpty.push(inp.value.trim()); });
+                        value = nonEmpty.join('\n');
+                    } else {
+                        const el = form.querySelector(`[name="${name}"]`);
+                        if (el) value = String(el.value);
+                    }
+                    fd.append(name, value);
+                });
+                return fd;
+            }
+
+            // --- Validation (including doctor name check) ---
+            function validateForm() {
+                let valid = true,
+                    firstInvalidField = null;
+
+                function showError(field, msgEl) {
+                    field.style.borderColor = '#d32f2f';
+                    if (msgEl) msgEl.style.display = 'block';
+                    valid = false;
+                    if (!firstInvalidField) firstInvalidField = field;
+                }
+
+                function clearError(field, msgEl) {
+                    field.style.borderColor = '#cfdde9';
+                    if (msgEl) msgEl.style.display = 'none';
+                }
+
+                const allFields = document.getElementById('patient-form').querySelectorAll('input, select, textarea');
+                allFields.forEach(field => {
+                    if (!field.required) return;
+                    if (!field.offsetParent) return;
+                    const formGroup = field.closest('.form-group');
+                    const errorEl = formGroup ? formGroup.querySelector('.error-msg') : null;
+                    if (field.type === 'radio') {
+                        const name = field.name;
+                        const checked = document.querySelector(`input[name="${name}"]:checked`);
+                        if (!checked) showError(field, errorEl);
+                        else clearError(field, errorEl);
+                    } else if (field.type === 'checkbox') {
+                        if (field.closest('.check-group')) {
+                            const groupName = field.name;
+                            const checked = document.querySelectorAll(`input[name="${groupName}"]:checked`);
+                            if (checked.length === 0) showError(field, errorEl);
+                            else { if (errorEl) errorEl.style.display = 'none'; }
+                        }
+                    } else {
+                        const val = field.value.trim();
+                        if (!val) showError(field, errorEl);
+                        else {
+                            clearError(field, errorEl);
+                            if (field.type === 'number') {
+                                const num = parseFloat(val);
+                                const min = field.min ? parseFloat(field.min) : -Infinity;
+                                const max = field.max ? parseFloat(field.max) : Infinity;
+                                if (num < min || num > max) showError(field, errorEl);
+                            }
+                        }
+                    }
+                });
+
+                // Doctor name validation
+                const doctorInputs = document.querySelectorAll('.doctors-input');
+                doctorInputs.forEach(input => {
+                    const val = input.value.trim();
+                    if (!input.required && val === '') return;
+                    if (val !== '' && doctorNames.length > 0 && !doctorNames.includes(val)) {
+                        showError(input, input.closest('.form-group')?.querySelector('.error-msg'));
+                    } else {
+                        clearError(input, input.closest('.form-group')?.querySelector('.error-msg'));
+                    }
+                });
+
+                if (firstInvalidField) {
+                    firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstInvalidField.focus();
+                }
+                return valid;
+            }
+
+            // --- Submission ---
+            const form = document.getElementById('patient-form');
+            const thankYou = document.getElementById('thank-you');
+            const formContent = document.getElementById('form-content');
+
+            const submitButton = document.getElementById('submit-button');
+            const submitStatus = document.getElementById('submit-status');
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (validateForm()) {
+                    submitButton.disabled = true;
+                    submitStatus.style.display = 'block';
+                    submitStatus.textContent = 'جار إرسال البيانات';
+                    const formData = buildFormData();
+                    fetch(
+                            'https://script.google.com/macros/s/AKfycbxjJmUvwt-IzfQ_M8a567h4vczknmp3wKToLFGk32cyjv8YbZINc_KRtRFVlWHNG8z3/exec', {
+                                method: 'POST',
+                                body: formData
+                            })
+                        .then(response => response.json())
+                        .then(data => {
+                            formContent.style.display = 'none';
+                            thankYou.style.display = 'block';
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        })
+                        .catch(error => {
+                            submitButton.disabled = false;
+                            submitStatus.style.display = 'none';
+                            alert('Submission failed. Please try again.');
+                            console.error(error);
+                        });
+                }
+            });
+
+            form.addEventListener('input', function(e) {
+                const field = e.target;
+                if (field.matches('input[type="text"], input[type="number"], input[type="date"], input[type="tel"], input[type="email"], select, textarea')) {
+                    const formGroup = field.closest('.form-group');
+                    const errorEl = formGroup ? formGroup.querySelector('.error-msg') : null;
+                    field.style.borderColor = '#cfdde9';
+                    if (errorEl) errorEl.style.display = 'none';
+                }
+            });
+
+            form.addEventListener('change', function(e) {
+                const field = e.target;
+                if (field.matches('input, select, textarea')) {
+                    const formGroup = field.closest('.form-group');
+                    const errorEl = formGroup ? formGroup.querySelector('.error-msg') : null;
+                    if (errorEl) errorEl.style.display = 'none';
+                    field.style.borderColor = '#cfdde9';
+                }
+            });
+
+            // --- Add To Home Screen (A2HS) support ---
+            let deferredPrompt = null;
+
+            function renderInstallButton() {
+                const existingBtn = document.getElementById('install-action-btn');
+                if (existingBtn) existingBtn.remove();
+
+                if (deferredPrompt) {
+                    const container = document.querySelector('.header-actions');
+                    if (container) {
+                        const btn = document.createElement('button');
+                        btn.id = 'install-action-btn';
+                        btn.className = 'action-btn visible';
+                        btn.innerHTML = '📥';
+                        btn.title = 'Install App';
+                        btn.onclick = () => {
+                            deferredPrompt.prompt();
+                            deferredPrompt.userChoice.then((choiceResult) => {
+                                if (choiceResult.outcome === 'accepted') {
+                                    console.log('User accepted the A2HS prompt');
+                                }
+                                deferredPrompt = null;
+                                renderInstallButton();
+                            });
+                        };
+                        container.appendChild(btn);
+                    }
+                }
+            }
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                renderInstallButton();
+            });
+
+            window.addEventListener('appinstalled', () => {
+                deferredPrompt = null;
+                renderInstallButton();
+            });
+
+            setTimeout(() => {
+                try {
+                    setupPWA();
+                } catch (e) {
+                    console.error('PWA Setup failed, but page is running:', e);
+                }
+            }, 100);
+
+            function setupPWA() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, 512, 512);
+                ctx.font = 'bold 420px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('📋', 256, 266);
+                const iconUrl = canvas.toDataURL('image/png');
+
+                let faviconLink = document.querySelector("link[rel*='icon']") || document.createElement('link');
+                faviconLink.type = 'image/png';
+                faviconLink.rel = 'shortcut icon';
+                faviconLink.href = iconUrl;
+                document.head.appendChild(faviconLink);
+
+                let appleLink = document.querySelector("link[rel='apple-touch-icon']") || document.createElement('link');
+                appleLink.rel = 'apple-touch-icon';
+                appleLink.href = iconUrl;
+                document.head.appendChild(appleLink);
+
+                const manifest = {
+                    name: document.title || 'App',
+                    short_name: document.title || 'App',
+                    start_url: '.',
+                    display: 'standalone',
+                    background_color: '#ffffff',
+                    theme_color: '#ff7675',
+                    orientation: 'portrait',
+                    icons: [{ src: iconUrl, sizes: '512x512', type: 'image/png' }]
+                };
+                const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+                const manifestUrl = URL.createObjectURL(manifestBlob);
+                const manifestLink = document.createElement('link');
+                manifestLink.rel = 'manifest';
+                manifestLink.href = manifestUrl;
+                document.head.appendChild(manifestLink);
+
+                if ('serviceWorker' in navigator) {
+                    const swCode =
+                        `self.addEventListener('install', e => self.skipWaiting());\nself.addEventListener('activate', e => e.waitUntil(clients.claim()));\nself.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));`;
+                    const swBlob = new Blob([swCode], { type: 'application/javascript' });
+                    const swUrl = URL.createObjectURL(swBlob);
+                    navigator.serviceWorker.register(swUrl).catch(() => {});
+                }
+                console.log('✅ PWA icon and manifest injected');
+            }
+
+        })();
+    </script>
+</body>
+</html>
